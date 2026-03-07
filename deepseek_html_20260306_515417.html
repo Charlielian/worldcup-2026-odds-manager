@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026世界杯 · 淘汰赛赛程树状图</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', 'Microsoft YaHei', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #0b1e33 0%, #1a2f40 100%);
+            min-height: 100vh;
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .tournament-card {
+            max-width: 1400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(8px);
+            border-radius: 48px;
+            padding: 40px 30px;
+            box-shadow: 0 30px 40px rgba(0, 0, 0, 0.6), 0 0 0 2px #ffd966 inset;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #f9e281, #ffb347);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 4px 10px #00000066;
+            letter-spacing: 2px;
+        }
+        .header h2 {
+            color: #c9e9ff;
+            font-weight: 400;
+            font-size: 1.4rem;
+            border-bottom: 2px dashed #3a6d8c;
+            padding-bottom: 10px;
+            margin-top: 5px;
+        }
+        .bracket-wrapper {
+            overflow-x: auto;
+            padding-bottom: 30px;
+            margin-top: 30px;
+        }
+        .bracket-grid {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            gap: 30px;
+            min-width: 1300px;
+            padding: 20px 10px;
+        }
+        /* 每一列 */
+        .round-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            justify-content: space-around;
+            position: relative;
+        }
+        /* 卡片通用样式 */
+        .match-card {
+            background: #fcf9f0;
+            border: 3px solid #0047ab;
+            border-radius: 28px;
+            padding: 18px 12px;
+            box-shadow: 0 12px 0 #002a5e, 0 8px 20px black;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            width: 100%;
+            min-width: 160px;
+        }
+        .match-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 0 #002a5e, 0 15px 30px black;
+            border-color: #ffc107;
+        }
+        /* 决赛特殊加宽 */
+        .final-col .match-card {
+            border-width: 4px;
+            border-color: #b8860b;
+            background: #fff6dd;
+        }
+        .team-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            gap: 10px;
+        }
+        .team {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+        }
+        .flag {
+            font-size: 40px;
+            line-height: 1;
+            filter: drop-shadow(2px 4px 3px #00000050);
+        }
+        .name {
+            font-weight: 700;
+            font-size: 16px;
+            color: #001f3f;
+            text-align: center;
+            margin-top: 5px;
+        }
+        .vs {
+            font-size: 24px;
+            font-weight: 900;
+            color: #b22222;
+            text-shadow: 1px 1px 0 #fff0f0;
+            background: #ffe0e0;
+            padding: 0 8px;
+            border-radius: 40px;
+        }
+        .match-meta {
+            margin-top: 15px;
+            width: 100%;
+            border-top: 2px dashed #9bb7d4;
+            padding-top: 12px;
+            text-align: center;
+        }
+        .round-badge {
+            background: #1e4d8f;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 40px;
+            display: inline-block;
+            letter-spacing: 0.5px;
+        }
+        .datetime {
+            font-weight: 600;
+            color: #002856;
+            margin-top: 6px;
+            font-size: 15px;
+        }
+        .venue {
+            font-size: 13px;
+            color: #2c3e50;
+            background: #e3eef9;
+            padding: 3px 12px;
+            border-radius: 30px;
+            margin-top: 6px;
+            font-style: italic;
+        }
+        /* 连接线绘制（使用伪元素） */
+        .match-card::after {
+            content: '';
+            position: absolute;
+            background: #d32f2f;
+            height: 4px;
+            width: 30px;
+            right: -33px;
+            top: 50%;
+            transform: translateY(-50%);
+            border-radius: 4px;
+            box-shadow: 0 2px 0 #8b1a1a;
+            z-index: 5;
+        }
+        /* 最后一列不需要向右的线 */
+        .final-col .match-card::after {
+            display: none;
+        }
+        /* 左边界线调整：第三列向左也有线？半决赛到决赛已经由前一列发出，此列不需要 */
+        .semi-col .match-card::after {
+            display: block; /* 默认有，但决赛列无，已处理 */
+        }
+        /* 但决赛列第三个卡片(三四名)不需要线 */
+        .final-col .match-card.third-place::after {
+            display: none;
+        }
+        /* 右侧半决赛列应该向左也有连接线？但线是从左向右，所以左侧列向右发，右侧列不需要向左的线，但我们需要从1/8到半决赛的线，已经在左侧1/8列向右发出，右侧半决赛会收到虚线？为了视觉对称，右侧半决赛的连线由左侧1/8决赛延伸过来，已经覆盖。这里不再重复 */
+        /* 为了让右侧1/8到半决赛也有连线，需要右侧1/8列向右发线，但右侧半决赛在更右边，所以我们对右侧1/8也设置向右线，覆盖到半决赛 */
+        .right-eight .match-card::after {
+            display: block;
+            right: -33px;
+        }
+        /* 半决赛列不再向右发线（决赛列无需接收线），但左半决赛向右发线到决赛，所以左半决赛保留。右半决赛向右发线到决赛？决赛已经由左半决赛连线，为避免重复，右半决赛的线可以去掉 */
+        .right-semi .match-card::after {
+            display: none;
+        }
+        /* 但是决赛应该接收来自左半决赛的线，而右半决赛的线就不发了；同时决赛列的三四名没有连线 */
+        /* 手动调整个别卡片 */
+        .left-semi .match-card::after {
+            display: block;
+        }
+        /* 1/8决赛两边的卡片都要向右连线到各自的半决赛 */
+        .left-eight .match-card::after, .right-eight .match-card::after {
+            display: block;
+        }
+        /* 1/16卡片向右连线到1/8 */
+        .left-sixteen .match-card::after, .right-sixteen .match-card::after {
+            display: block;
+        }
+        /* 最左边和最右边列不要左侧连线(已足够) */
+        /* 增加右侧半决赛到决赛的连接视觉——因为决赛已经在最中间，右半决赛其实没有向右的箭头，但我们需要一条从右半决赛指向决赛的线，但决赛位置特殊，可以将右半决赛的线朝左画？但是标准是从左向右，为了对称，从右侧1/8连线到右半决赛已经足够，半决赛到决赛从左半决赛连线已经覆盖冠军战，三四名决赛无连线。因此符合图片 */
+        /* 三四名决赛单独修饰 */
+        .match-card.third-place {
+            margin-top: 30px;
+            border-color: #5a6d7c;
+        }
+        /* 奖杯 */
+        .trophy {
+            font-size: 60px;
+            text-align: center;
+            margin-bottom: 10px;
+            filter: drop-shadow(0 8px 6px #daa520);
+        }
+    </style>
+</head>
+<body>
+<div class="tournament-card">
+    <div class="header">
+        <h1>⚽ 2026 FIFA WORLD CUP ⚽</h1>
+        <h2>KNOCKOUT STAGE · 淘汰赛完全树状图</h2>
+    </div>
+
+    <div class="bracket-wrapper">
+        <div class="bracket-grid">
+
+            <!-- 第1列：左半区 1/16决赛 (4场) -->
+            <div class="round-col left-sixteen" style="justify-content: space-between;">
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇦🇷</span><span class="name">阿根廷</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇸🇳</span><span class="name">塞内加尔</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.05 01:00</div><div class="venue">卢赛尔</div></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇫🇷</span><span class="name">法国</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇯🇵</span><span class="name">日本</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.05 05:00</div><div class="venue">海湾</div></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇪🇸</span><span class="name">西班牙</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇩🇰</span><span class="name">丹麦</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.07 03:00</div><div class="venue">教育城</div></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇵🇹</span><span class="name">葡萄牙</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇺🇾</span><span class="name">乌拉圭</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.07 08:00</div><div class="venue">974</div></div>
+                </div>
+            </div>
+
+            <!-- 第2列：左半区 1/8决赛 (2场) -->
+            <div class="round-col left-eight" style="justify-content: space-around;">
+                <div class="match-card" style="margin-top: 25px;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇦🇷</span><span class="name">阿根廷</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇫🇷</span><span class="name">法国</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">07.06 04:00</div><div class="venue">哈利法</div></div>
+                </div>
+                <div class="match-card" style="margin-bottom: 25px;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇪🇸</span><span class="name">西班牙</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇵🇹</span><span class="name">葡萄牙</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">07.08 00:00</div><div class="venue">阿尔贾努布</div></div>
+                </div>
+            </div>
+
+            <!-- 第3列：左半区 半决赛 (1场) -->
+            <div class="round-col left-semi" style="justify-content: center;">
+                <div class="match-card" style="margin: 80px 0;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇦🇷</span><span class="name">阿根廷</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇪🇸</span><span class="name">西班牙</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">半决赛</span><div class="datetime">07.12 05:00</div><div class="venue">卢赛尔</div></div>
+                </div>
+            </div>
+
+            <!-- 第4列：决赛 + 三四名决赛 (2场) 决赛列不加向右连线 -->
+            <div class="round-col final-col" style="justify-content: space-between;">
+                <div class="trophy">🏆</div>
+                <div class="match-card" style="border-color:#d4af37;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇦🇷</span><span class="name">阿根廷</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇩🇪</span><span class="name">德国</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">决 赛</span><div class="datetime">07.20 03:00</div><div class="venue">卢赛尔</div></div>
+                </div>
+                <div class="match-card third-place" style="border-color:#6c757d;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇪🇸</span><span class="name">西班牙</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇵🇹</span><span class="name">葡萄牙</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">三四名决赛</span><div class="datetime">07.19 05:00</div><div class="venue">哈利法</div></div>
+                </div>
+            </div>
+
+            <!-- 第5列：右半区 半决赛 (1场) -->
+            <div class="round-col right-semi" style="justify-content: center;">
+                <div class="match-card" style="margin: 80px 0;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇩🇪</span><span class="name">德国</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇧🇷</span><span class="name">巴西</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">半决赛</span><div class="datetime">07.15 03:00</div><div class="venue">海湾</div></div>
+                </div>
+            </div>
+
+            <!-- 第6列：右半区 1/8决赛 (2场) -->
+            <div class="round-col right-eight" style="justify-content: space-around;">
+                <div class="match-card" style="margin-top: 25px;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇩🇪</span><span class="name">德国</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇲🇦</span><span class="name">摩洛哥</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">07.06 08:00</div><div class="venue">教育城</div></div>
+                </div>
+                <div class="match-card" style="margin-bottom: 25px;">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇧🇷</span><span class="name">巴西</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇳🇱</span><span class="name">荷兰</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">07.08 04:00</div><div class="venue">974</div></div>
+                </div>
+            </div>
+
+            <!-- 第7列：右半区 1/16决赛 (4场) -->
+            <div class="round-col right-sixteen" style="justify-content: space-between;">
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇩🇪</span><span class="name">德国</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇨🇦</span><span class="name">加拿大</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.05 01:00</div><div class="venue">阿尔贾努布</div></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇲🇦</span><span class="name">摩洛哥</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇭🇷</span><span class="name">克罗地亚</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.06 08:00</div><div class="venue">哈利法</div></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇧🇷</span><span class="name">巴西</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇰🇷</span><span class="name">韩国</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.07 03:00</div><div class="venue">海湾</div></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">🇳🇱</span><span class="name">荷兰</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">🇺🇸</span><span class="name">美国</span></div>
+                    </div>
+                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">07.07 08:00</div><div class="venue">卢赛尔</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部对阵列表（浓缩版） -->
+    <div style="margin-top: 60px; display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; color: white; background: #00285680; border-radius: 60px; padding: 30px; border: 1px solid #ffd966;">
+        <div style="min-width: 250px;">
+            <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 1/16决赛 (部分)</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li>🇦🇷阿根廷 vs 塞内加尔🇸🇳 07.05 01:00</li>
+                <li>🇫🇷法国 vs 日本🇯🇵 07.05 05:00</li>
+                <li>🇪🇸西班牙 vs 丹麦🇩🇰 07.07 03:00</li>
+                <li>🇵🇹葡萄牙 vs 乌拉圭🇺🇾 07.07 08:00</li>
+                <li>🇩🇪德国 vs 加拿大🇨🇦 07.05 01:00</li>
+                <li>🇧🇷巴西 vs 韩国🇰🇷 07.07 03:00</li>
+            </ul>
+        </div>
+        <div style="min-width: 250px;">
+            <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 1/8决赛</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li>🇦🇷阿根廷 vs 法国🇫🇷 07.06 04:00</li>
+                <li>🇪🇸西班牙 vs 葡萄牙🇵🇹 07.08 00:00</li>
+                <li>🇩🇪德国 vs 摩洛哥🇲🇦 07.06 08:00</li>
+                <li>🇧🇷巴西 vs 荷兰🇳🇱 07.08 04:00</li>
+            </ul>
+        </div>
+        <div style="min-width: 200px;">
+            <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 半决赛 & 决赛</h4>
+            <ul style="list-style: none; padding: 0;">
+                <li>🇦🇷阿根廷 vs 西班牙🇪🇸 07.12 05:00</li>
+                <li>🇩🇪德国 vs 巴西🇧🇷 07.15 03:00</li>
+                <li>🏆决赛 07.20 03:00</li>
+                <li>🥉三四名 07.19 05:00</li>
+            </ul>
+        </div>
+    </div>
+</div>
+<!-- 说明：所有比赛时间、对阵参考经典赛历绘制 -->
+</body>
+</html>

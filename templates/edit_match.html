@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026世界杯 - 编辑比赛信息</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        .header {
+            background-color: #0047AB;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .main-content {
+            flex: 1;
+            padding: 20px 0;
+        }
+        .admin-card {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        /* 导航栏样式 */
+        .navbar {
+            margin-bottom: 30px;
+            border-radius: 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .nav-link {
+            color: white;
+            margin: 0 10px;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .nav-link:hover {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>2026世界杯 - 编辑比赛信息</h1>
+    </div>
+
+    <div class="container main-content">
+        <div class="admin-card">
+            <h3>编辑小组赛信息</h3>
+            <form action="{{ url_for('update_match', match_id=match[0]) }}" method="post">
+                <div class="mb-3">
+                    <label for="team1" class="form-label">主队</label>
+                    <input type="text" class="form-control" id="team1" name="team1" value="{{ match[1] }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="team2" class="form-label">客队</label>
+                    <input type="text" class="form-control" id="team2" name="team2" value="{{ match[2] }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="match_time" class="form-label">比赛时间</label>
+                    <input type="datetime-local" class="form-control" id="match_time" name="match_time" value="{{ match[3].replace(' ', 'T') }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="group_name" class="form-label">组别</label>
+                    <select class="form-control" id="group_name" name="group_name" required>
+                        <option value="A组" {% if match[5] == 'A组' %}selected{% endif %}>A组</option>
+                        <option value="B组" {% if match[5] == 'B组' %}selected{% endif %}>B组</option>
+                        <option value="C组" {% if match[5] == 'C组' %}selected{% endif %}>C组</option>
+                        <option value="D组" {% if match[5] == 'D组' %}selected{% endif %}>D组</option>
+                        <option value="E组" {% if match[5] == 'E组' %}selected{% endif %}>E组</option>
+                        <option value="F组" {% if match[5] == 'F组' %}selected{% endif %}>F组</option>
+                        <option value="G组" {% if match[5] == 'G组' %}selected{% endif %}>G组</option>
+                        <option value="H组" {% if match[5] == 'H组' %}selected{% endif %}>H组</option>
+                        <option value="I组" {% if match[5] == 'I组' %}selected{% endif %}>I组</option>
+                        <option value="J组" {% if match[5] == 'J组' %}selected{% endif %}>J组</option>
+                        <option value="K组" {% if match[5] == 'K组' %}selected{% endif %}>K组</option>
+                        <option value="L组" {% if match[5] == 'L组' %}selected{% endif %}>L组</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="status" class="form-label">状态</label>
+                    <select class="form-control" id="status" name="status" required>
+                        <option value="upcoming" {% if match[6] == 'upcoming' %}selected{% endif %}>未开始</option>
+                        <option value="finished" {% if match[6] == 'finished' %}selected{% endif %}>已结束</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label for="score1" class="form-label">主队比分</label>
+                    <input type="number" class="form-control" id="score1" name="score1" value="{{ match[7] if match[7] else '' }}" min="0">
+                </div>
+                <div class="mb-3">
+                    <label for="score2" class="form-label">客队比分</label>
+                    <input type="number" class="form-control" id="score2" name="score2" value="{{ match[8] if match[8] else '' }}" min="0">
+                </div>
+                <button type="submit" class="btn btn-primary">保存修改</button>
+                <a href="{{ url_for('admin') }}" class="btn btn-secondary">取消</a>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        <a href="/" class="nav-link">主页</a>
+        <a href="/group_stage" class="nav-link">小组赛</a>
+        <a href="/knockout" class="nav-link">淘汰赛</a>
+        <a href="/admin/group_team_management" class="nav-link">小组队伍管理</a>
+        <a href="/admin/match_management" class="nav-link">比赛管理</a>
+        <a href="/admin/match_generation" class="nav-link">比赛生成</a>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2026世界杯淘汰赛完整赛程</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Microsoft Yahei", sans-serif;
+        }
+        body {
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+        .tournament-container {
+            max-width: 2200px;
+            margin: 0 auto;
+            padding: 40px;
+            background: linear-gradient(to right, #e8f5e9, #ffffff, #e8f5e9);
+            overflow-x: auto;
+        }
+        /* 核心布局：7列（左1/8 → 左1/4 → 上半决赛 → 决赛区 → 下半决赛 → 右1/4 → 右1/8） */
+        .bracket-grid {
+            display: grid;
+            grid-template-columns: 220px 220px 220px 300px 220px 220px 220px;
+            gap: 40px;
+            align-items: center;
+            justify-content: center;
+        }
+        /* 列容器：垂直排列 */
+        .col {
+            display: flex;
+            flex-direction: column;
+            gap: 40px; /* 同列比赛块垂直间距，匹配参考图 */
+            align-items: center;
+        }
+        /* 比赛卡片样式（完全匹配参考图） */
+        .match-card {
+            background-color: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            padding: 12px 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            width: 220px;
+            position: relative;
+        }
+        /* 决赛/三四名卡片（加宽居中） */
+        .final-card {
+            width: 300px;
+            padding: 12px 15px;
+        }
+        /* 半决赛卡片 */
+        .semi-card {
+            width: 220px;
+            padding: 12px 15px;
+        }
+        /* 队伍占位框（灰色小方块） */
+        .team-slot {
+            width: 30px;
+            height: 30px;
+            background-color: #eeeeee;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #999999;
+        }
+        /* VS标识（红色加粗，匹配参考图） */
+        .vs-text {
+            color: #d32f2f;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        /* 比赛信息（字体/间距匹配参考图） */
+        .match-info {
+            flex: 1;
+        }
+        .match-round {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333333;
+            margin-bottom: 3px;
+        }
+        .match-time {
+            font-size: 12px;
+            color: #666666;
+        }
+        /* 奖杯图标（居中+金色） */
+        .trophy-wrap {
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        .trophy-icon {
+            font-size: 60px;
+            color: #d4af37;
+        }
+        /* 晋级连线（红色粗线，核心修改） */
+        .connector-l {
+            position: absolute;
+            z-index: -1;
+        }
+        /* 1/8 → 1/4 连线（向右，红色粗线） */
+        .conn-18-to-14 {
+            top: 50%;
+            right: -40px;
+            width: 40px;
+            height: 4px; /* 加粗：从2px改为4px */
+            background-color: #d32f2f; /* 红色：匹配VS标识颜色 */
+            transform: translateY(-50%);
+        }
+        /* 1/4 → 半决赛 连线（向右/左，红色粗线） */
+        .conn-14-to-semi {
+            top: 50%;
+            right: -40px;
+            width: 40px;
+            height: 4px; /* 加粗 */
+            background-color: #d32f2f; /* 红色 */
+            transform: translateY(-50%);
+        }
+        .conn-14-to-semi-right {
+            top: 50%;
+            left: -40px;
+            width: 40px;
+            height: 4px; /* 加粗 */
+            background-color: #d32f2f; /* 红色 */
+            transform: translateY(-50%);
+        }
+        /* 半决赛 → 决赛 连线（向中间，红色粗线） */
+        .conn-semi-to-final {
+            top: 50%;
+            right: -40px;
+            width: 40px;
+            height: 4px; /* 加粗 */
+            background-color: #d32f2f; /* 红色 */
+            transform: translateY(-50%);
+        }
+        .conn-semi-to-final-bottom {
+            top: 50%;
+            left: -40px;
+            width: 40px;
+            height: 4px; /* 加粗 */
+            background-color: #d32f2f; /* 红色 */
+            transform: translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="tournament-container">
+        <div class="bracket-grid">
+            <!-- 第一列：左侧1/8决赛（4场，上半区） -->
+            <div class="col">
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.05 01:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.07 03:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.05 05:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.07 08:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14"></div>
+                </div>
+            </div>
+
+            <!-- 第二列：左侧1/4决赛（2场，对应左4场1/8胜者） -->
+            <div class="col">
+                <div class="match-card">
+                    <div class="team-slot">1/8</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/8</div>
+                    <div class="match-info">
+                        <div class="match-round">1/4决赛</div>
+                        <div class="match-time">07.10 04:00</div>
+                    </div>
+                    <div class="connector-l conn-14-to-semi"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/8</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/8</div>
+                    <div class="match-info">
+                        <div class="match-round">1/4决赛</div>
+                        <div class="match-time">07.11 03:00</div>
+                    </div>
+                    <div class="connector-l conn-14-to-semi"></div>
+                </div>
+                <!-- 占位：匹配参考图垂直间距 -->
+                <div style="height: 80px;"></div>
+            </div>
+
+            <!-- 第三列：上半决赛（1场，对应左2场1/4胜者） -->
+            <div class="col">
+                <div class="match-card semi-card">
+                    <div class="team-slot">1/4</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/4</div>
+                    <div class="match-info">
+                        <div class="match-round">半决赛</div>
+                        <div class="match-time">07.15 03:00</div>
+                    </div>
+                    <div class="connector-l conn-semi-to-final"></div>
+                </div>
+                <!-- 占位：匹配参考图布局 -->
+                <div style="height: 240px;"></div>
+            </div>
+
+            <!-- 第四列：决赛+三四名+奖杯（核心区） -->
+            <div class="col">
+                <!-- 占位：对齐上半决赛 -->
+                <div style="height: 40px;"></div>
+                <div class="trophy-wrap">
+                    <div class="trophy-icon">🏆</div>
+                </div>
+                <!-- 决赛 -->
+                <div class="match-card final-card">
+                    <div class="team-slot" style="font-size: 20px;">🏆</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot" style="font-size: 20px;">🏆</div>
+                    <div class="match-info">
+                        <div class="match-round">决赛</div>
+                        <div class="match-time">07.20 03:00</div>
+                    </div>
+                </div>
+                <!-- 三四名决赛 -->
+                <div class="match-card final-card">
+                    <div class="team-slot" style="font-size: 20px;">🏆</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot" style="font-size: 20px;">🏆</div>
+                    <div class="match-info">
+                        <div class="match-round">三四名决赛</div>
+                        <div class="match-time">07.19 05:00</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 第五列：下半决赛（1场，对应右2场1/4胜者） -->
+            <div class="col">
+                <!-- 占位：匹配参考图布局 -->
+                <div style="height: 240px;"></div>
+                <div class="match-card semi-card">
+                    <div class="team-slot">1/4</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/4</div>
+                    <div class="match-info">
+                        <div class="match-round">半决赛</div>
+                        <div class="match-time">07.16 03:00</div>
+                    </div>
+                    <div class="connector-l conn-semi-to-final-bottom"></div>
+                </div>
+            </div>
+
+            <!-- 第六列：右侧1/4决赛（2场，对应右4场1/8胜者） -->
+            <div class="col">
+                <!-- 占位：匹配参考图垂直间距 -->
+                <div style="height: 80px;"></div>
+                <div class="match-card">
+                    <div class="team-slot">1/8</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/8</div>
+                    <div class="match-info">
+                        <div class="match-round">1/4决赛</div>
+                        <div class="match-time">07.12 05:00</div>
+                    </div>
+                    <div class="connector-l conn-14-to-semi-right"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/8</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/8</div>
+                    <div class="match-info">
+                        <div class="match-round">1/4决赛</div>
+                        <div class="match-time">07.12 09:00</div>
+                    </div>
+                    <div class="connector-l conn-14-to-semi-right"></div>
+                </div>
+            </div>
+
+            <!-- 第七列：右侧1/8决赛（4场，下半区） -->
+            <div class="col">
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.06 04:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14" style="left: -40px; right: auto;"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.08 00:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14" style="left: -40px; right: auto;"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.06 08:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14" style="left: -40px; right: auto;"></div>
+                </div>
+                <div class="match-card">
+                    <div class="team-slot">1/16</div>
+                    <div class="vs-text">VS</div>
+                    <div class="team-slot">1/16</div>
+                    <div class="match-info">
+                        <div class="match-round">1/8决赛</div>
+                        <div class="match-time">07.08 04:00</div>
+                    </div>
+                    <div class="connector-l conn-18-to-14" style="left: -40px; right: auto;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

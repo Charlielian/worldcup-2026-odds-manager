@@ -1,0 +1,79 @@
+1. 项目概述
+表格
+项目名称	2026 世界杯赛事与足彩数据可视化系统
+技术栈	Python 3.9+、Flask 2.3+、SQLite、Bootstrap 5、Requests（爬虫）、APScheduler（定时任务）
+核心目标	可视化展示世界杯赛事信息、足彩赔率，支持手动录入比赛结果，分阶段展示小组赛 / 淘汰赛数据
+
+三、足彩数据爬取合规网站推荐
+1. 合法合规数据源（优先选择）
+竞彩网（官方）：https://www.sporttery.cn/（中国体育彩票官方网站，提供世界杯赔率数据，需遵守 robots.txt）
+懂球帝：https://www.dongqiudi.com/（有公开的体育数据板块，需申请 API 或合规爬取）
+雷速体育：https://www.leisu.com/（提供赛事赔率数据，需查看网站爬取规则）
+2. 爬取注意事项
+合规性：爬取前查看目标网站的 robots.txt（如 https://www.sporttery.cn/robots.txt），避免爬取禁止的路径；
+反爬应对：设置合理的爬取间隔（≥2 秒）、使用随机 UA、避免高频请求；
+数据用途：仅限个人学习使用，禁止商用或违规传播；
+替代方案：若爬取困难，可使用免费体育数据 API（如「球探体育 API」「极速体育 API」，需注册申请）。
+四、部署与运行步骤
+安装依赖：pip install -r requirements.txt
+运行主程序：python app.py
+访问系统：浏览器打开 http://localhost:5000
+初始化数据：首次运行会自动创建数据库并插入测试数据，可手动补充真实赛事数据。
+总结
+核心技术栈为 Python+Flask+SQLite，前端用 Bootstrap 实现大屏可视化，后台通过 APScheduler 定时爬取赔率数据；
+数据库分为赛事表（matches）和赔率表（odds），通过比赛 ID 关联，支持手动录入比分、分阶段展示赛事；
+足彩数据爬取优先选择竞彩网、懂球帝等合规网站，需遵守反爬规则和法律规定，仅限个人学习使用。
+
+
+数据库设计：
+-- 初始化数据库脚本（schema.sql）
+CREATE TABLE IF NOT EXISTS matches (
+    match_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    match_date DATE NOT NULL,       -- 比赛日期（YYYY-MM-DD）
+    match_time TIME NOT NULL,       -- 比赛时间（HH:MM）
+    home_team VARCHAR(50) NOT NULL, -- 主队名称
+    away_team VARCHAR(50) NOT NULL, -- 客队名称
+    stage VARCHAR(20) NOT NULL,     -- 赛事阶段（group/knockout）
+    home_goals INTEGER DEFAULT 0,   -- 主队进球数
+    away_goals INTEGER DEFAULT 0,   -- 客队进球数
+    is_finished BOOLEAN DEFAULT 0   -- 比赛是否结束（0/1）
+);
+
+CREATE TABLE IF NOT EXISTS odds (
+    odds_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    match_id INTEGER NOT NULL,      -- 关联比赛ID
+    home_odds FLOAT NOT NULL,       -- 主队胜赔率
+    away_odds FLOAT NOT NULL,       -- 客队胜赔率
+    draw_odds FLOAT NOT NULL,       -- 平局赔率
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP, -- 赔率更新时间
+    FOREIGN KEY (match_id) REFERENCES matches(match_id) ON DELETE CASCADE
+);
+
+-- 测试数据插入
+INSERT INTO matches (match_date, match_time, home_team, away_team, stage) VALUES
+('2026-06-11', '20:00', '巴西', '德国', 'group'),
+('2026-06-12', '18:00', '阿根廷', '法国', 'group');
+
+INSERT INTO odds (match_id, home_odds, away_odds, draw_odds) VALUES
+(1, 2.15, 3.80, 3.20),
+(2, 2.30, 3.50, 3.00);
+
+
+项目结构
+worldcup/
+├── app.py               # 主程序（Flask入口）
+├── database.db          # SQLite数据库文件
+├── schema.sql           # 数据库初始化脚本
+├── crawler/             # 爬虫模块
+│   ├── __init__.py
+│   └── odds_crawler.py  # 赔率爬取脚本
+├── static/              # 静态资源
+│   ├── css/
+│   │   └── style.css    # 自定义样式
+│   └── js/
+│       └── main.js      # 前端交互逻辑
+├── templates/           # 前端模板
+│   ├── index.html       # 主页（大屏展示）
+│   ├── group_stage.html # 小组赛页面
+│   └── knockout.html    # 淘汰赛页面
+└── requirements.txt     # 依赖清单
