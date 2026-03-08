@@ -21,7 +21,7 @@
             align-items: center;
         }
         .tournament-card {
-            max-width: 1400px;
+            max-width: 1800px;
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(8px);
@@ -59,25 +59,23 @@
             display: flex;
             flex-direction: row;
             justify-content: space-between;
-            gap: 30px;
-            min-width: 1300px;
+            gap: 20px;
+            min-width: 1600px;
             padding: 20px 10px;
         }
-        /* 每一列 */
         .round-col {
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 15px;
             justify-content: space-around;
             position: relative;
         }
-        /* 卡片通用样式 */
         .match-card {
             background: #fcf9f0;
             border: 3px solid #0047ab;
             border-radius: 28px;
-            padding: 18px 12px;
+            padding: 15px 10px;
             box-shadow: 0 12px 0 #002a5e, 0 8px 20px black;
             transition: all 0.2s;
             display: flex;
@@ -85,25 +83,19 @@
             align-items: center;
             position: relative;
             width: 100%;
-            min-width: 160px;
+            min-width: 140px;
         }
         .match-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 15px 0 #002a5e, 0 15px 30px black;
             border-color: #ffc107;
         }
-        /* 决赛特殊加宽 */
-        .final-col .match-card {
-            border-width: 4px;
-            border-color: #b8860b;
-            background: #fff6dd;
-        }
         .team-row {
             display: flex;
             justify-content: space-between;
             align-items: center;
             width: 100%;
-            gap: 10px;
+            gap: 8px;
         }
         .team {
             display: flex;
@@ -112,39 +104,39 @@
             flex: 1;
         }
         .flag {
-            font-size: 40px;
+            font-size: 32px;
             line-height: 1;
             filter: drop-shadow(2px 4px 3px #00000050);
         }
         .name {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 14px;
             color: #001f3f;
             text-align: center;
-            margin-top: 5px;
+            margin-top: 3px;
         }
         .vs {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 900;
             color: #b22222;
             text-shadow: 1px 1px 0 #fff0f0;
             background: #ffe0e0;
-            padding: 0 8px;
+            padding: 0 6px;
             border-radius: 40px;
         }
         .match-meta {
-            margin-top: 15px;
+            margin-top: 10px;
             width: 100%;
             border-top: 2px dashed #9bb7d4;
-            padding-top: 12px;
+            padding-top: 8px;
             text-align: center;
         }
         .round-badge {
             background: #1e4d8f;
             color: white;
             font-weight: 600;
-            font-size: 14px;
-            padding: 4px 12px;
+            font-size: 12px;
+            padding: 3px 10px;
             border-radius: 40px;
             display: inline-block;
             letter-spacing: 0.5px;
@@ -152,85 +144,37 @@
         .datetime {
             font-weight: 600;
             color: #002856;
-            margin-top: 6px;
-            font-size: 15px;
+            margin-top: 4px;
+            font-size: 13px;
         }
         .venue {
-            font-size: 13px;
+            font-size: 11px;
             color: #2c3e50;
             background: #e3eef9;
-            padding: 3px 12px;
+            padding: 2px 10px;
             border-radius: 30px;
-            margin-top: 6px;
+            margin-top: 4px;
             font-style: italic;
         }
-        /* 连接线绘制（使用伪元素） */
-        .match-card::after {
-            content: '';
-            position: absolute;
-            background: #d32f2f;
-            height: 4px;
-            width: 30px;
-            right: -33px;
-            top: 50%;
-            transform: translateY(-50%);
-            border-radius: 4px;
-            box-shadow: 0 2px 0 #8b1a1a;
-            z-index: 5;
-        }
-        /* 最后一列不需要向右的线 */
-        .final-col .match-card::after {
-            display: none;
-        }
-        /* 左边界线调整：第三列向左也有线？半决赛到决赛已经由前一列发出，此列不需要 */
-        .semi-col .match-card::after {
-            display: block; /* 默认有，但决赛列无，已处理 */
-        }
-        /* 但决赛列第三个卡片(三四名)不需要线 */
-        .final-col .match-card.third-place::after {
-            display: none;
-        }
-        /* 右侧半决赛列应该向左也有连接线？但线是从左向右，所以左侧列向右发，右侧列不需要向左的线，但我们需要从1/8到半决赛的线，已经在左侧1/8列向右发出，右侧半决赛会收到虚线？为了视觉对称，右侧半决赛的连线由左侧1/8决赛延伸过来，已经覆盖。这里不再重复 */
-        /* 为了让右侧1/8到半决赛也有连线，需要右侧1/8列向右发线，但右侧半决赛在更右边，所以我们对右侧1/8也设置向右线，覆盖到半决赛 */
-        .right-eight .match-card::after {
-            display: block;
-            right: -33px;
-        }
-        /* 半决赛列不再向右发线（决赛列无需接收线），但左半决赛向右发线到决赛，所以左半决赛保留。右半决赛向右发线到决赛？决赛已经由左半决赛连线，为避免重复，右半决赛的线可以去掉 */
-        .right-semi .match-card::after {
-            display: none;
-        }
-        /* 但是决赛应该接收来自左半决赛的线，而右半决赛的线就不发了；同时决赛列的三四名没有连线 */
-        /* 手动调整个别卡片 */
-        .left-semi .match-card::after {
-            display: block;
-        }
-        /* 1/8决赛两边的卡片都要向右连线到各自的半决赛 */
-        .left-eight .match-card::after, .right-eight .match-card::after {
-            display: block;
-        }
-        /* 1/16卡片向右连线到1/8 */
-        .left-sixteen .match-card::after, .right-sixteen .match-card::after {
-            display: block;
-        }
-        /* 最左边和最右边列不要左侧连线(已足够) */
-        /* 增加右侧半决赛到决赛的连接视觉——因为决赛已经在最中间，右半决赛其实没有向右的箭头，但我们需要一条从右半决赛指向决赛的线，但决赛位置特殊，可以将右半决赛的线朝左画？但是标准是从左向右，为了对称，从右侧1/8连线到右半决赛已经足够，半决赛到决赛从左半决赛连线已经覆盖冠军战，三四名决赛无连线。因此符合图片 */
-        /* 三四名决赛单独修饰 */
-        .match-card.third-place {
-            margin-top: 30px;
-            border-color: #5a6d7c;
-        }
-        /* 奖杯 */
         .trophy {
             font-size: 60px;
             text-align: center;
             margin-bottom: 10px;
             filter: drop-shadow(0 8px 6px #daa520);
         }
-        /* 导航栏样式调整 */
         .navbar {
             margin-bottom: 30px;
             border-radius: 10px;
+        }
+        .round-title {
+            color: #ffd966;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            padding: 5px 15px;
+            background: rgba(255, 217, 102, 0.1);
+            border-radius: 20px;
         }
     </style>
 </head>
@@ -289,161 +233,208 @@
                 {% set _ = match_map.__setitem__(match.position, match) %}
             {% endfor %}
 
-            <!-- 第1列：左半区 1/16决赛 (4场) -->
-            <div class="round-col left-sixteen" style="justify-content: space-between;">
+            <!-- 第1列：左半区 1/16决赛 (8场) -->
+            <div class="round-col">
+                <div class="round-title">1/16决赛</div>
+                {% for i in range(1, 9) %}
+                {% set pos = 'r16_' ~ i %}
+                {% if pos in match_map %}
                 <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left1_1'].flag1 if 'left1_1' in match_map else '' }}</span><span class="name">{{ match_map['left1_1'].team1 if 'left1_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag1 }}</span><span class="name">{{ match_map[pos].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left1_1'].flag2 if 'left1_1' in match_map else '' }}</span><span class="name">{{ match_map['left1_1'].team2 if 'left1_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag2 }}</span><span class="name">{{ match_map[pos].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['left1_1'].match_time[5:10] if 'left1_1' in match_map else '' }} {{ match_map['left1_1'].match_time[11:] if 'left1_1' in match_map else '' }}</div><div class="venue">{{ match_map['left1_1'].venue if 'left1_1' in match_map else '' }}</div></div>
-                </div>
-                <div class="match-card">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left2_1'].flag1 if 'left2_1' in match_map else '' }}</span><span class="name">{{ match_map['left2_1'].team1 if 'left2_1' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left2_1'].flag2 if 'left2_1' in match_map else '' }}</span><span class="name">{{ match_map['left2_1'].team2 if 'left2_1' in match_map else '' }}</span></div>
+                    <div class="match-meta">
+                        <span class="round-badge">1/16决赛</span>
+                        <div class="datetime">{{ match_map[pos].match_time[5:10] }} {{ match_map[pos].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map[pos].venue }}</div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['left2_1'].match_time[5:10] if 'left2_1' in match_map else '' }} {{ match_map['left2_1'].match_time[11:] if 'left2_1' in match_map else '' }}</div><div class="venue">{{ match_map['left2_1'].venue if 'left2_1' in match_map else '' }}</div></div>
                 </div>
-                <div class="match-card">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left3_1'].flag1 if 'left3_1' in match_map else '' }}</span><span class="name">{{ match_map['left3_1'].team1 if 'left3_1' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left3_1'].flag2 if 'left3_1' in match_map else '' }}</span><span class="name">{{ match_map['left3_1'].team2 if 'left3_1' in match_map else '' }}</span></div>
-                    </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['left3_1'].match_time[5:10] if 'left3_1' in match_map else '' }} {{ match_map['left3_1'].match_time[11:] if 'left3_1' in match_map else '' }}</div><div class="venue">{{ match_map['left3_1'].venue if 'left3_1' in match_map else '' }}</div></div>
-                </div>
-                <div class="match-card">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left4_1'].flag1 if 'left4_1' in match_map else '' }}</span><span class="name">{{ match_map['left4_1'].team1 if 'left4_1' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left4_1'].flag2 if 'left4_1' in match_map else '' }}</span><span class="name">{{ match_map['left4_1'].team2 if 'left4_1' in match_map else '' }}</span></div>
-                    </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['left4_1'].match_time[5:10] if 'left4_1' in match_map else '' }} {{ match_map['left4_1'].match_time[11:] if 'left4_1' in match_map else '' }}</div><div class="venue">{{ match_map['left4_1'].venue if 'left4_1' in match_map else '' }}</div></div>
-                </div>
+                {% endif %}
+                {% endfor %}
             </div>
 
-            <!-- 第2列：左半区 1/8决赛 (2场) -->
-            <div class="round-col left-eight" style="justify-content: space-around;">
-                <div class="match-card" style="margin-top: 25px;">
+            <!-- 第2列：左半区 1/8决赛 (4场) -->
+            <div class="round-col">
+                <div class="round-title">1/8决赛</div>
+                {% for i in range(1, 5) %}
+                {% set pos = 'r8_' ~ i %}
+                {% if pos in match_map %}
+                <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left_qf_1'].flag1 if 'left_qf_1' in match_map else '' }}</span><span class="name">{{ match_map['left_qf_1'].team1 if 'left_qf_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag1 }}</span><span class="name">{{ match_map[pos].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left_qf_1'].flag2 if 'left_qf_1' in match_map else '' }}</span><span class="name">{{ match_map['left_qf_1'].team2 if 'left_qf_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag2 }}</span><span class="name">{{ match_map[pos].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">{{ match_map['left_qf_1'].match_time[5:10] if 'left_qf_1' in match_map else '' }} {{ match_map['left_qf_1'].match_time[11:] if 'left_qf_1' in match_map else '' }}</div><div class="venue">{{ match_map['left_qf_1'].venue if 'left_qf_1' in match_map else '' }}</div></div>
-                </div>
-                <div class="match-card" style="margin-bottom: 25px;">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left_qf_3'].flag1 if 'left_qf_3' in match_map else '' }}</span><span class="name">{{ match_map['left_qf_3'].team1 if 'left_qf_3' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left_qf_3'].flag2 if 'left_qf_3' in match_map else '' }}</span><span class="name">{{ match_map['left_qf_3'].team2 if 'left_qf_3' in match_map else '' }}</span></div>
+                    <div class="match-meta">
+                        <span class="round-badge">1/8决赛</span>
+                        <div class="datetime">{{ match_map[pos].match_time[5:10] }} {{ match_map[pos].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map[pos].venue }}</div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">{{ match_map['left_qf_3'].match_time[5:10] if 'left_qf_3' in match_map else '' }} {{ match_map['left_qf_3'].match_time[11:] if 'left_qf_3' in match_map else '' }}</div><div class="venue">{{ match_map['left_qf_3'].venue if 'left_qf_3' in match_map else '' }}</div></div>
                 </div>
+                {% endif %}
+                {% endfor %}
             </div>
 
-            <!-- 第3列：左半区 半决赛 (1场) -->
-            <div class="round-col left-semi" style="justify-content: center;">
-                <div class="match-card" style="margin: 80px 0;">
+            <!-- 第3列：左半区 1/4决赛 (2场) -->
+            <div class="round-col">
+                <div class="round-title">1/4决赛</div>
+                {% for i in range(1, 3) %}
+                {% set pos = 'qf_' ~ i %}
+                {% if pos in match_map %}
+                <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['left_sf'].flag1 if 'left_sf' in match_map else '' }}</span><span class="name">{{ match_map['left_sf'].team1 if 'left_sf' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag1 }}</span><span class="name">{{ match_map[pos].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['left_sf'].flag2 if 'left_sf' in match_map else '' }}</span><span class="name">{{ match_map['left_sf'].team2 if 'left_sf' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag2 }}</span><span class="name">{{ match_map[pos].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">半决赛</span><div class="datetime">{{ match_map['left_sf'].match_time[5:10] if 'left_sf' in match_map else '' }} {{ match_map['left_sf'].match_time[11:] if 'left_sf' in match_map else '' }}</div><div class="venue">{{ match_map['left_sf'].venue if 'left_sf' in match_map else '' }}</div></div>
+                    <div class="match-meta">
+                        <span class="round-badge">1/4决赛</span>
+                        <div class="datetime">{{ match_map[pos].match_time[5:10] }} {{ match_map[pos].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map[pos].venue }}</div>
+                    </div>
                 </div>
+                {% endif %}
+                {% endfor %}
             </div>
 
-            <!-- 第4列：决赛 + 三四名决赛 (2场) 决赛列不加向右连线 -->
-            <div class="round-col final-col" style="justify-content: space-between;">
+            <!-- 第4列：半决赛 (1场) -->
+            <div class="round-col">
+                <div class="round-title">半决赛</div>
+                {% if 'sf_1' in match_map %}
+                <div class="match-card">
+                    <div class="team-row">
+                        <div class="team"><span class="flag">{{ match_map['sf_1'].flag1 }}</span><span class="name">{{ match_map['sf_1'].team1 }}</span></div>
+                        <span class="vs">VS</span>
+                        <div class="team"><span class="flag">{{ match_map['sf_1'].flag2 }}</span><span class="name">{{ match_map['sf_1'].team2 }}</span></div>
+                    </div>
+                    <div class="match-meta">
+                        <span class="round-badge">半决赛</span>
+                        <div class="datetime">{{ match_map['sf_1'].match_time[5:10] }} {{ match_map['sf_1'].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map['sf_1'].venue }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- 第5列：决赛 + 三四名决赛 -->
+            <div class="round-col">
+                <div class="round-title">决赛</div>
                 <div class="trophy">🏆</div>
+                {% if 'final' in match_map %}
                 <div class="match-card" style="border-color:#d4af37;">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['final'].flag1 if 'final' in match_map else '' }}</span><span class="name">{{ match_map['final'].team1 if 'final' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map['final'].flag1 }}</span><span class="name">{{ match_map['final'].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['final'].flag2 if 'final' in match_map else '' }}</span><span class="name">{{ match_map['final'].team2 if 'final' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map['final'].flag2 }}</span><span class="name">{{ match_map['final'].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">决 赛</span><div class="datetime">{{ match_map['final'].match_time[5:10] if 'final' in match_map else '' }} {{ match_map['final'].match_time[11:] if 'final' in match_map else '' }}</div><div class="venue">{{ match_map['final'].venue if 'final' in match_map else '' }}</div></div>
+                    <div class="match-meta">
+                        <span class="round-badge">决 赛</span>
+                        <div class="datetime">{{ match_map['final'].match_time[5:10] }} {{ match_map['final'].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map['final'].venue }}</div>
+                    </div>
                 </div>
-                <div class="match-card third-place" style="border-color:#6c757d;">
+                {% endif %}
+                {% if 'third_place' in match_map %}
+                <div class="match-card" style="border-color:#6c757d; margin-top: 20px;">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['third_place'].flag1 if 'third_place' in match_map else '' }}</span><span class="name">{{ match_map['third_place'].team1 if 'third_place' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map['third_place'].flag1 }}</span><span class="name">{{ match_map['third_place'].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['third_place'].flag2 if 'third_place' in match_map else '' }}</span><span class="name">{{ match_map['third_place'].team2 if 'third_place' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map['third_place'].flag2 }}</span><span class="name">{{ match_map['third_place'].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">三四名决赛</span><div class="datetime">{{ match_map['third_place'].match_time[5:10] if 'third_place' in match_map else '' }} {{ match_map['third_place'].match_time[11:] if 'third_place' in match_map else '' }}</div><div class="venue">{{ match_map['third_place'].venue if 'third_place' in match_map else '' }}</div></div>
+                    <div class="match-meta">
+                        <span class="round-badge">三四名决赛</span>
+                        <div class="datetime">{{ match_map['third_place'].match_time[5:10] }} {{ match_map['third_place'].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map['third_place'].venue }}</div>
+                    </div>
                 </div>
+                {% endif %}
             </div>
 
-            <!-- 第5列：右半区 半决赛 (1场) -->
-            <div class="round-col right-semi" style="justify-content: center;">
-                <div class="match-card" style="margin: 80px 0;">
+            <!-- 第6列：半决赛 (1场) -->
+            <div class="round-col">
+                <div class="round-title">半决赛</div>
+                {% if 'sf_2' in match_map %}
+                <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right_sf'].flag1 if 'right_sf' in match_map else '' }}</span><span class="name">{{ match_map['right_sf'].team1 if 'right_sf' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map['sf_2'].flag1 }}</span><span class="name">{{ match_map['sf_2'].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right_sf'].flag2 if 'right_sf' in match_map else '' }}</span><span class="name">{{ match_map['right_sf'].team2 if 'right_sf' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map['sf_2'].flag2 }}</span><span class="name">{{ match_map['sf_2'].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">半决赛</span><div class="datetime">{{ match_map['right_sf'].match_time[5:10] if 'right_sf' in match_map else '' }} {{ match_map['right_sf'].match_time[11:] if 'right_sf' in match_map else '' }}</div><div class="venue">{{ match_map['right_sf'].venue if 'right_sf' in match_map else '' }}</div></div>
+                    <div class="match-meta">
+                        <span class="round-badge">半决赛</span>
+                        <div class="datetime">{{ match_map['sf_2'].match_time[5:10] }} {{ match_map['sf_2'].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map['sf_2'].venue }}</div>
+                    </div>
                 </div>
+                {% endif %}
             </div>
 
-            <!-- 第6列：右半区 1/8决赛 (2场) -->
-            <div class="round-col right-eight" style="justify-content: space-around;">
-                <div class="match-card" style="margin-top: 25px;">
+            <!-- 第7列：右半区 1/4决赛 (2场) -->
+            <div class="round-col">
+                <div class="round-title">1/4决赛</div>
+                {% for i in range(3, 5) %}
+                {% set pos = 'qf_' ~ i %}
+                {% if pos in match_map %}
+                <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right_qf_1'].flag1 if 'right_qf_1' in match_map else '' }}</span><span class="name">{{ match_map['right_qf_1'].team1 if 'right_qf_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag1 }}</span><span class="name">{{ match_map[pos].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right_qf_1'].flag2 if 'right_qf_1' in match_map else '' }}</span><span class="name">{{ match_map['right_qf_1'].team2 if 'right_qf_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag2 }}</span><span class="name">{{ match_map[pos].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">{{ match_map['right_qf_1'].match_time[5:10] if 'right_qf_1' in match_map else '' }} {{ match_map['right_qf_1'].match_time[11:] if 'right_qf_1' in match_map else '' }}</div><div class="venue">{{ match_map['right_qf_1'].venue if 'right_qf_1' in match_map else '' }}</div></div>
-                </div>
-                <div class="match-card" style="margin-bottom: 25px;">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right_qf_3'].flag1 if 'right_qf_3' in match_map else '' }}</span><span class="name">{{ match_map['right_qf_3'].team1 if 'right_qf_3' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right_qf_3'].flag2 if 'right_qf_3' in match_map else '' }}</span><span class="name">{{ match_map['right_qf_3'].team2 if 'right_qf_3' in match_map else '' }}</span></div>
+                    <div class="match-meta">
+                        <span class="round-badge">1/4决赛</span>
+                        <div class="datetime">{{ match_map[pos].match_time[5:10] }} {{ match_map[pos].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map[pos].venue }}</div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/8决赛</span><div class="datetime">{{ match_map['right_qf_3'].match_time[5:10] if 'right_qf_3' in match_map else '' }} {{ match_map['right_qf_3'].match_time[11:] if 'right_qf_3' in match_map else '' }}</div><div class="venue">{{ match_map['right_qf_3'].venue if 'right_qf_3' in match_map else '' }}</div></div>
                 </div>
+                {% endif %}
+                {% endfor %}
             </div>
 
-            <!-- 第7列：右半区 1/16决赛 (4场) -->
-            <div class="round-col right-sixteen" style="justify-content: space-between;">
+            <!-- 第8列：右半区 1/8决赛 (4场) -->
+            <div class="round-col">
+                <div class="round-title">1/8决赛</div>
+                {% for i in range(5, 9) %}
+                {% set pos = 'r8_' ~ i %}
+                {% if pos in match_map %}
                 <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right1_1'].flag1 if 'right1_1' in match_map else '' }}</span><span class="name">{{ match_map['right1_1'].team1 if 'right1_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag1 }}</span><span class="name">{{ match_map[pos].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right1_1'].flag2 if 'right1_1' in match_map else '' }}</span><span class="name">{{ match_map['right1_1'].team2 if 'right1_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag2 }}</span><span class="name">{{ match_map[pos].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['right1_1'].match_time[5:10] if 'right1_1' in match_map else '' }} {{ match_map['right1_1'].match_time[11:] if 'right1_1' in match_map else '' }}</div><div class="venue">{{ match_map['right1_1'].venue if 'right1_1' in match_map else '' }}</div></div>
+                    <div class="match-meta">
+                        <span class="round-badge">1/8决赛</span>
+                        <div class="datetime">{{ match_map[pos].match_time[5:10] }} {{ match_map[pos].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map[pos].venue }}</div>
+                    </div>
                 </div>
+                {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- 第9列：右半区 1/16决赛 (8场) -->
+            <div class="round-col">
+                <div class="round-title">1/16决赛</div>
+                {% for i in range(9, 17) %}
+                {% set pos = 'r16_' ~ i %}
+                {% if pos in match_map %}
                 <div class="match-card">
                     <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right2_1'].flag1 if 'right2_1' in match_map else '' }}</span><span class="name">{{ match_map['right2_1'].team1 if 'right2_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag1 }}</span><span class="name">{{ match_map[pos].team1 }}</span></div>
                         <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right2_1'].flag2 if 'right2_1' in match_map else '' }}</span><span class="name">{{ match_map['right2_1'].team2 if 'right2_1' in match_map else '' }}</span></div>
+                        <div class="team"><span class="flag">{{ match_map[pos].flag2 }}</span><span class="name">{{ match_map[pos].team2 }}</span></div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['right2_1'].match_time[5:10] if 'right2_1' in match_map else '' }} {{ match_map['right2_1'].match_time[11:] if 'right2_1' in match_map else '' }}</div><div class="venue">{{ match_map['right2_1'].venue if 'right2_1' in match_map else '' }}</div></div>
-                </div>
-                <div class="match-card">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right3_1'].flag1 if 'right3_1' in match_map else '' }}</span><span class="name">{{ match_map['right3_1'].team1 if 'right3_1' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right3_1'].flag2 if 'right3_1' in match_map else '' }}</span><span class="name">{{ match_map['right3_1'].team2 if 'right3_1' in match_map else '' }}</span></div>
+                    <div class="match-meta">
+                        <span class="round-badge">1/16决赛</span>
+                        <div class="datetime">{{ match_map[pos].match_time[5:10] }} {{ match_map[pos].match_time[11:] }}</div>
+                        <div class="venue">{{ match_map[pos].venue }}</div>
                     </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['right3_1'].match_time[5:10] if 'right3_1' in match_map else '' }} {{ match_map['right3_1'].match_time[11:] if 'right3_1' in match_map else '' }}</div><div class="venue">{{ match_map['right3_1'].venue if 'right3_1' in match_map else '' }}</div></div>
                 </div>
-                <div class="match-card">
-                    <div class="team-row">
-                        <div class="team"><span class="flag">{{ match_map['right4_1'].flag1 if 'right4_1' in match_map else '' }}</span><span class="name">{{ match_map['right4_1'].team1 if 'right4_1' in match_map else '' }}</span></div>
-                        <span class="vs">VS</span>
-                        <div class="team"><span class="flag">{{ match_map['right4_1'].flag2 if 'right4_1' in match_map else '' }}</span><span class="name">{{ match_map['right4_1'].team2 if 'right4_1' in match_map else '' }}</span></div>
-                    </div>
-                    <div class="match-meta"><span class="round-badge">1/16决赛</span><div class="datetime">{{ match_map['right4_1'].match_time[5:10] if 'right4_1' in match_map else '' }} {{ match_map['right4_1'].match_time[11:] if 'right4_1' in match_map else '' }}</div><div class="venue">{{ match_map['right4_1'].venue if 'right4_1' in match_map else '' }}</div></div>
-                </div>
+                {% endif %}
+                {% endfor %}
             </div>
         </div>
     </div>
@@ -451,10 +442,10 @@
     <!-- 底部对阵列表（浓缩版） -->
     <div style="margin-top: 60px; display: flex; flex-wrap: wrap; gap: 30px; justify-content: center; color: white; background: #00285680; border-radius: 60px; padding: 30px; border: 1px solid #ffd966;">
         <div style="min-width: 250px;">
-            <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 1/16决赛 (部分)</h4>
+            <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 1/16决赛</h4>
             <ul style="list-style: none; padding: 0;">
                 {% for match in bracket_data %}
-                    {% if match.match_number >= 73 and match.match_number <= 80 %}
+                    {% if match.match_number >= 1 and match.match_number <= 16 %}
                     <li>{{ match.flag1 if match.flag1 else '' }}{{ match.team1 if match.team1 else match.slot1_team_group }} vs {{ match.team2 if match.team2 else match.slot2_team_group }}{{ match.flag2 if match.flag2 else '' }} {{ match.match_time[5:10] }} {{ match.match_time[11:] }}</li>
                     {% endif %}
                 {% endfor %}
@@ -464,7 +455,17 @@
             <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 1/8决赛</h4>
             <ul style="list-style: none; padding: 0;">
                 {% for match in bracket_data %}
-                    {% if match.match_number >= 81 and match.match_number <= 96 %}
+                    {% if match.match_number >= 17 and match.match_number <= 24 %}
+                    <li>{{ match.flag1 if match.flag1 else '' }}{{ match.team1 if match.team1 else match.slot1_team_group }} vs {{ match.team2 if match.team2 else match.slot2_team_group }}{{ match.flag2 if match.flag2 else '' }} {{ match.match_time[5:10] }} {{ match.match_time[11:] }}</li>
+                    {% endif %}
+                {% endfor %}
+            </ul>
+        </div>
+        <div style="min-width: 250px;">
+            <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 1/4决赛</h4>
+            <ul style="list-style: none; padding: 0;">
+                {% for match in bracket_data %}
+                    {% if match.match_number >= 25 and match.match_number <= 28 %}
                     <li>{{ match.flag1 if match.flag1 else '' }}{{ match.team1 if match.team1 else match.slot1_team_group }} vs {{ match.team2 if match.team2 else match.slot2_team_group }}{{ match.flag2 if match.flag2 else '' }} {{ match.match_time[5:10] }} {{ match.match_time[11:] }}</li>
                     {% endif %}
                 {% endfor %}
@@ -474,7 +475,7 @@
             <h4 style="color: #ffd966; border-bottom: 2px solid; padding-bottom: 5px;">🔹 半决赛 & 决赛</h4>
             <ul style="list-style: none; padding: 0;">
                 {% for match in bracket_data %}
-                    {% if match.match_number >= 97 and match.match_number <= 102 %}
+                    {% if match.match_number >= 29 and match.match_number <= 32 %}
                     <li>{{ match.flag1 if match.flag1 else '' }}{{ match.team1 if match.team1 else match.slot1_team_group }} vs {{ match.team2 if match.team2 else match.slot2_team_group }}{{ match.flag2 if match.flag2 else '' }} {{ match.match_time[5:10] }} {{ match.match_time[11:] }}</li>
                     {% endif %}
                 {% endfor %}

@@ -228,7 +228,7 @@ def get_next_match_date():
     return today
 
 # 获取小组排名
-def get_group_rankings():
+def get_group_rankings(group=None):
     conn = sqlite3.connect('worldcup.db')
     cursor = conn.cursor()
     
@@ -240,13 +240,42 @@ def get_group_rankings():
     cursor.execute("SELECT team1, team2, score1, score2, group_name FROM matches WHERE status = 'finished' AND stage = '小组赛'")
     finished_matches = cursor.fetchall()
     
+    # 标准化队伍名称的函数
+    def normalize_team_name(name):
+        # 处理不同格式的队伍名称
+        name = name.strip()  # 去除首尾空格
+        # 处理欧洲附加赛的不同格式
+        if '欧洲' in name and '附加赛' in name and '胜者' in name:
+            # 提取组号
+            import re
+            # 匹配任何字母或数字
+            group_match = re.search(r'[A-Za-z0-9]', name)
+            if group_match:
+                group = group_match.group()
+                return f'欧洲附加赛{group}组胜者'
+        # 处理洲际附加赛的不同格式
+        elif '洲际' in name and '附加赛' in name and '胜者' in name:
+            # 提取组号
+            import re
+            # 匹配任何字母或数字
+            group_match = re.search(r'[A-Za-z0-9]', name)
+            if group_match:
+                group = group_match.group()
+                return f'洲际附加赛{group}组胜者'
+        # 处理沙特的不同格式
+        elif '沙特' in name:
+            return '沙特阿拉伯'
+        return name
+    
     # 初始化队伍统计数据
     team_stats = {}
     for team in teams:
         team_id, team_name, group_id = team
-        team_stats[team_name] = {
+        # 标准化队伍名称
+        normalized_name = normalize_team_name(team_name)
+        team_stats[normalized_name] = {
             'team_id': team_id,
-            'team_name': team_name,
+            'team_name': normalized_name,
             'group_id': group_id,
             'played': 0,
             'won': 0,
@@ -264,37 +293,84 @@ def get_group_rankings():
         score1 = int(score1) if score1 else 0
         score2 = int(score2) if score2 else 0
         
+        # 标准化队伍名称
+        normalized_team1 = normalize_team_name(team1)
+        normalized_team2 = normalize_team_name(team2)
+        
+        # 获取当前比赛的group_id
+        cursor.execute("SELECT id FROM groups WHERE group_name = ?", (group_name,))
+        group_result = cursor.fetchone()
+        current_group_id = group_result[0] if group_result else 1
+        
+        # 确保队伍1在team_stats中
+        if normalized_team1 not in team_stats:
+            # 尝试获取队伍的group_id，如果找不到则使用当前比赛的group_id
+            cursor.execute("SELECT group_id FROM teams WHERE team_name = ?", (normalized_team1,))
+            result = cursor.fetchone()
+            group_id = result[0] if result else current_group_id
+            team_stats[normalized_team1] = {
+                'team_id': 0,
+                'team_name': normalized_team1,
+                'group_id': group_id,
+                'played': 0,
+                'won': 0,
+                'drawn': 0,
+                'lost': 0,
+                'goals_for': 0,
+                'goals_against': 0,
+                'goal_difference': 0,
+                'points': 0
+            }
+        
         # 更新队伍1的统计数据
-        if team1 in team_stats:
-            team_stats[team1]['played'] += 1
-            team_stats[team1]['goals_for'] += score1
-            team_stats[team1]['goals_against'] += score2
-            team_stats[team1]['goal_difference'] = team_stats[team1]['goals_for'] - team_stats[team1]['goals_against']
-            
-            if score1 > score2:
-                team_stats[team1]['won'] += 1
-                team_stats[team1]['points'] += 3
-            elif score1 == score2:
-                team_stats[team1]['drawn'] += 1
-                team_stats[team1]['points'] += 1
-            else:
-                team_stats[team1]['lost'] += 1
+        team_stats[normalized_team1]['played'] += 1
+        team_stats[normalized_team1]['goals_for'] += score1
+        team_stats[normalized_team1]['goals_against'] += score2
+        team_stats[normalized_team1]['goal_difference'] = team_stats[normalized_team1]['goals_for'] - team_stats[normalized_team1]['goals_against']
+        
+        if score1 > score2:
+            team_stats[normalized_team1]['won'] += 1
+            team_stats[normalized_team1]['points'] += 3
+        elif score1 == score2:
+            team_stats[normalized_team1]['drawn'] += 1
+            team_stats[normalized_team1]['points'] += 1
+        else:
+            team_stats[normalized_team1]['lost'] += 1
+        
+        # 确保队伍2在team_stats中
+        if normalized_team2 not in team_stats:
+            # 尝试获取队伍的group_id，如果找不到则使用当前比赛的group_id
+            cursor.execute("SELECT group_id FROM teams WHERE team_name = ?", (normalized_team2,))
+            result = cursor.fetchone()
+            group_id = result[0] if result else current_group_id
+            team_stats[normalized_team2] = {
+                'team_id': 0,
+                'team_name': normalized_team2,
+                'group_id': group_id,
+                'played': 0,
+                'won': 0,
+                'drawn': 0,
+                'lost': 0,
+                'goals_for': 0,
+                'goals_against': 0,
+                'goal_difference': 0,
+                'points': 0
+            }
         
         # 更新队伍2的统计数据
-        if team2 in team_stats:
-            team_stats[team2]['played'] += 1
-            team_stats[team2]['goals_for'] += score2
-            team_stats[team2]['goals_against'] += score1
-            team_stats[team2]['goal_difference'] = team_stats[team2]['goals_for'] - team_stats[team2]['goals_against']
-            
-            if score2 > score1:
-                team_stats[team2]['won'] += 1
-                team_stats[team2]['points'] += 3
-            elif score2 == score1:
-                team_stats[team2]['drawn'] += 1
-                team_stats[team2]['points'] += 1
-            else:
-                team_stats[team2]['lost'] += 1
+        team_stats[normalized_team2]['played'] += 1
+        team_stats[normalized_team2]['goals_for'] += score2
+        team_stats[normalized_team2]['goals_against'] += score1
+        team_stats[normalized_team2]['goal_difference'] = team_stats[normalized_team2]['goals_for'] - team_stats[normalized_team2]['goals_against']
+        
+        if score2 > score1:
+            team_stats[normalized_team2]['won'] += 1
+            team_stats[normalized_team2]['points'] += 3
+        elif score2 == score1:
+            team_stats[normalized_team2]['drawn'] += 1
+            team_stats[normalized_team2]['points'] += 1
+        else:
+            team_stats[normalized_team2]['lost'] += 1
     
     # 按小组分组
     grouped_stats = {}
@@ -318,14 +394,18 @@ def get_group_rankings():
     # 组合小组名称和排名
     result = []
     for group_id, group_teams in grouped_stats.items():
+        group_name = groups.get(group_id, f'Group {group_id}')
+        # 如果指定了小组，则只返回该小组的排名
+        if group and group_name != group + '组':
+            continue
         result.append({
             'group_id': group_id,
-            'group_name': groups.get(group_id, f'Group {group_id}'),
+            'group_name': group_name,
             'teams': group_teams
         })
     
     # 按小组ID排序
-        result.sort(key=lambda x: x['group_id'])
+    result.sort(key=lambda x: x['group_id'])
     
     return result
 
@@ -337,46 +417,49 @@ def init_knockout_matchups():
     # 检查是否已有数据
     cursor.execute("SELECT COUNT(*) FROM knockout_matchups")
     if cursor.fetchone()[0] > 0:
-        conn.close()
-        return
+        # 清空现有数据，重新初始化
+        cursor.execute("DELETE FROM knockout_matchups")
     
     # 32强对阵数据
     knockout_data = [
-        # 1/16决赛 (73-88)
-        (73, '1/16决赛', 'left1_1', 'A1', 'C3/E3/F3/G3', '墨西哥城', '2026-06-29 03:00'),
-        (74, '1/16决赛', 'left1_2', 'B1', 'A3/C3/D3/H3', '多伦多', '2026-06-29 10:00'),
-        (75, '1/16决赛', 'left2_1', 'C1', 'A2', '亚特兰大', '2026-06-30 03:00'),
-        (76, '1/16决赛', 'left2_2', 'D1', 'B2', '旧金山', '2026-06-30 10:00'),
-        (77, '1/16决赛', 'left3_1', 'E1', 'D2', '西雅图', '2026-07-01 01:00'),
-        (78, '1/16决赛', 'left3_2', 'F1', 'C2', '费城', '2026-07-01 08:00'),
-        (79, '1/16决赛', 'left4_1', 'G1', 'F2', '休斯顿', '2026-07-02 01:00'),
-        (80, '1/16决赛', 'left4_2', 'H1', 'E2', '洛杉矶', '2026-07-02 09:00'),
-        (81, '1/16决赛', 'right1_1', 'I1', 'H2', '迈阿密', '2026-07-03 01:00'),
-        (82, '1/16决赛', 'right1_2', 'J1', 'I2', '堪萨斯城', '2026-07-03 09:00'),
-        (83, '1/16决赛', 'right2_1', 'K1', 'J2', '达拉斯', '2026-07-04 01:00'),
-        (84, '1/16决赛', 'right2_2', 'L1', 'K2', '波士顿', '2026-07-04 08:00'),
-        (85, '1/16决赛', 'right3_1', 'A2', 'B3/F3/G3/I3', '温哥华', '2026-07-04 01:00'),
-        (86, '1/16决赛', 'right3_2', 'C2', 'D3/E3/H3/I3/L3', '纽约/新泽西', '2026-07-04 04:00'),
-        (87, '1/16决赛', 'right4_1', 'E2', 'F3/G3/H3/I3/J3', '芝加哥', '2026-07-04 08:00'),
-        (88, '1/16决赛', 'right4_2', 'G2', 'H3/I3/J3/K3/L3', '蒙特利尔', '2026-07-04 10:00'),
-        # 1/8决赛 (89-96)
-        (89, '1/8决赛', 'left_qf_1', '73胜者', '75胜者', '费城', '2026-07-05 01:00'),
-        (90, '1/8决赛', 'left_qf_2', '74胜者', '77胜者', '休斯顿', '2026-07-05 04:00'),
-        (91, '1/8决赛', 'right_qf_1', '76胜者', '78胜者', '洛杉矶', '2026-07-06 08:00'),
-        (92, '1/8决赛', 'right_qf_2', '79胜者', '81胜者', '迈阿密', '2026-07-06 11:00'),
-        (93, '1/8决赛', 'left_qf_3', '80胜者', '82胜者', '堪萨斯城', '2026-07-07 03:00'),
-        (94, '1/8决赛', 'left_qf_4', '83胜者', '85胜者', '达拉斯', '2026-07-07 06:00'),
-        (95, '1/8决赛', 'right_qf_3', '84胜者', '86胜者', '波士顿', '2026-07-08 00:00'),
-        (96, '1/8决赛', 'right_qf_4', '87胜者', '88胜者', '亚特兰大', '2026-07-08 04:00'),
-        # 半决赛 (97-98)
-        (97, '半决赛', 'left_sf', '89胜者', '90胜者', '波士顿', '2026-07-10 04:00'),
-        (98, '半决赛', 'right_sf', '93胜者', '94胜者', '洛杉矶', '2026-07-11 05:00'),
-        (99, '半决赛', 'left_sf_2', '91胜者', '92胜者', '迈阿密', '2026-07-11 09:00'),
-        (100, '半决赛', 'right_sf_2', '95胜者', '96胜者', '堪萨斯城', '2026-07-12 06:00'),
+        # 1/16决赛 (1-16) - 16场
+        (1, '1/16决赛', 'r16_1', 'A1', '最佳小组第三(1)', '墨西哥城', '2026-06-28 03:00'),
+        (2, '1/16决赛', 'r16_2', 'B1', '最佳小组第三(2)', '多伦多', '2026-06-28 10:00'),
+        (3, '1/16决赛', 'r16_3', 'C1', '最佳小组第三(3)', '亚特兰大', '2026-06-28 15:00'),
+        (4, '1/16决赛', 'r16_4', 'D1', '最佳小组第三(4)', '旧金山', '2026-06-28 20:00'),
+        (5, '1/16决赛', 'r16_5', 'E1', 'F2', '西雅图', '2026-06-29 03:00'),
+        (6, '1/16决赛', 'r16_6', 'F1', 'E2', '费城', '2026-06-29 10:00'),
+        (7, '1/16决赛', 'r16_7', 'G1', 'H2', '休斯顿', '2026-06-29 15:00'),
+        (8, '1/16决赛', 'r16_8', 'H1', 'G2', '洛杉矶', '2026-06-29 20:00'),
+        (9, '1/16决赛', 'r16_9', 'I1', '最佳小组第三(5)', '迈阿密', '2026-06-30 03:00'),
+        (10, '1/16决赛', 'r16_10', 'J1', '最佳小组第三(6)', '堪萨斯城', '2026-06-30 10:00'),
+        (11, '1/16决赛', 'r16_11', 'K1', '最佳小组第三(7)', '达拉斯', '2026-06-30 15:00'),
+        (12, '1/16决赛', 'r16_12', 'L1', '最佳小组第三(8)', '波士顿', '2026-06-30 20:00'),
+        (13, '1/16决赛', 'r16_13', 'A2', 'B2', '温哥华', '2026-07-01 03:00'),
+        (14, '1/16决赛', 'r16_14', 'C2', 'D2', '纽约/新泽西', '2026-07-01 10:00'),
+        (15, '1/16决赛', 'r16_15', 'I2', 'J2', '芝加哥', '2026-07-01 15:00'),
+        (16, '1/16决赛', 'r16_16', 'K2', 'L2', '蒙特利尔', '2026-07-01 20:00'),
+        # 1/8决赛 (17-24) - 8场
+        (17, '1/8决赛', 'r8_1', '1胜者', '3胜者', '费城', '2026-07-04 03:00'),
+        (18, '1/8决赛', 'r8_2', '2胜者', '5胜者', '休斯顿', '2026-07-04 10:00'),
+        (19, '1/8决赛', 'r8_3', '4胜者', '6胜者', '洛杉矶', '2026-07-05 03:00'),
+        (20, '1/8决赛', 'r8_4', '7胜者', '9胜者', '迈阿密', '2026-07-05 10:00'),
+        (21, '1/8决赛', 'r8_5', '8胜者', '10胜者', '堪萨斯城', '2026-07-06 03:00'),
+        (22, '1/8决赛', 'r8_6', '11胜者', '13胜者', '达拉斯', '2026-07-06 10:00'),
+        (23, '1/8决赛', 'r8_7', '12胜者', '14胜者', '波士顿', '2026-07-07 03:00'),
+        (24, '1/8决赛', 'r8_8', '15胜者', '16胜者', '亚特兰大', '2026-07-07 10:00'),
+        # 1/4决赛 (25-28) - 4场
+        (25, '1/4决赛', 'qf_1', '17胜者', '18胜者', '波士顿', '2026-07-09 03:00'),
+        (26, '1/4决赛', 'qf_2', '19胜者', '20胜者', '洛杉矶', '2026-07-09 10:00'),
+        (27, '1/4决赛', 'qf_3', '21胜者', '22胜者', '迈阿密', '2026-07-10 03:00'),
+        (28, '1/4决赛', 'qf_4', '23胜者', '24胜者', '堪萨斯城', '2026-07-10 10:00'),
+        # 半决赛 (29-30) - 2场
+        (29, '半决赛', 'sf_1', '25胜者', '26胜者', '达拉斯', '2026-07-14 03:00'),
+        (30, '半决赛', 'sf_2', '27胜者', '28胜者', '亚特兰大', '2026-07-15 03:00'),
         # 三四名决赛
-        (103, '三四名决赛', 'third_place', '97负者', '98负者', '迈阿密', '2026-07-19 05:00'),
+        (31, '三四名决赛', 'third_place', '29负者', '30负者', '迈阿密', '2026-07-19 05:00'),
         # 决赛
-        (104, '决赛', 'final', '97胜者', '98胜者', '纽约/新泽西', '2026-07-20 08:00'),
+        (32, '决赛', 'final', '29胜者', '30胜者', '纽约/新泽西', '2026-07-20 08:00'),
     ]
     
     cursor.executemany(
@@ -402,6 +485,18 @@ def get_group_team_mapping():
     
     return mapping
 
+# 检查小组赛是否全部完成
+def is_group_stage_completed():
+    conn = sqlite3.connect('worldcup.db')
+    cursor = conn.cursor()
+    
+    # 检查是否存在未完成的小组赛
+    cursor.execute("SELECT COUNT(*) FROM matches WHERE stage = '小组赛' AND status != 'finished'")
+    unfinished_count = cursor.fetchone()[0]
+    
+    conn.close()
+    return unfinished_count == 0
+
 # 获取成绩最好的小组第三
 def get_best_third_place_teams():
     rankings = get_group_rankings()
@@ -417,9 +512,14 @@ def get_best_third_place_teams():
     # 按规则排序：1. 积分 2. 净胜球 3. 总进球数
     third_place_teams.sort(key=lambda x: (-x['points'], -x['goal_difference'], -x['goals_for']))
     
-    # 生成映射，例如 C3/E3/F3/G3 表示从C、E、F、G组中选择成绩最好的小组第三
+    # 生成映射，包括最佳小组第三(1)到(8)
     mapping = {}
     
+    # 处理最佳小组第三(1)到(8)
+    for i in range(min(8, len(third_place_teams))):
+        mapping[f'最佳小组第三({i+1})'] = third_place_teams[i]['team_name']
+    
+    # 保留原有映射以保持兼容性
     # 处理 C3/E3/F3/G3
     groups_for_c3 = ['C', 'E', 'F', 'G']
     eligible_teams = [t for t in third_place_teams if t['group_name'] in groups_for_c3]
@@ -466,6 +566,10 @@ def get_best_third_place_teams():
 
 # 更新淘汰赛对阵表中的实际队伍
 def update_knockout_teams():
+    # 只有当小组赛全部完成时才更新淘汰赛队伍
+    if not is_group_stage_completed():
+        return
+    
     conn = sqlite3.connect('worldcup.db')
     cursor = conn.cursor()
     
@@ -510,7 +614,10 @@ def get_knockout_bracket_data():
     conn = sqlite3.connect('worldcup.db')
     cursor = conn.cursor()
     
-    team_mapping = get_group_team_mapping()
+    # 获取队伍映射，即使小组赛未完成也能获取基本映射
+    team_mapping = {}
+    if is_group_stage_completed():
+        team_mapping = get_group_team_mapping()
     
     cursor.execute("SELECT id, match_number, round_name, position, slot1_team_group, slot2_team_group, venue, match_time FROM knockout_matchups ORDER BY match_number")
     matchups = cursor.fetchall()
@@ -587,11 +694,31 @@ def get_group_matches(group=None):
 
 # 获取所有淘汰赛
 def get_knockout_matches():
+    # 检查小组赛是否完成
+    if not is_group_stage_completed():
+        return []
+    
     conn = sqlite3.connect('worldcup.db')
     cursor = conn.cursor()
     
+    # 联合查询获取淘汰赛比赛及其对应的轮次
     cursor.execute(
-        "SELECT id, team1, team2, match_time, stage, status, score1, score2 FROM matches WHERE stage = '淘汰赛' ORDER BY match_time"
+        """
+        SELECT m.id, m.team1, m.team2, m.match_time, m.stage, m.status, m.score1, m.score2, km.round_name
+        FROM matches m
+        LEFT JOIN knockout_matchups km ON m.match_time = km.match_time
+        WHERE m.stage = '淘汰赛'
+        ORDER BY 
+            CASE 
+                WHEN km.round_name = '1/16决赛' THEN 1
+                WHEN km.round_name = '1/8决赛' THEN 2
+                WHEN km.round_name = '1/4决赛' THEN 3
+                WHEN km.round_name = '半决赛' THEN 4
+                WHEN km.round_name = '三四名决赛' THEN 5
+                WHEN km.round_name = '决赛' THEN 6
+                ELSE 7
+            END, m.match_time
+        """
     )
     matches = cursor.fetchall()
     
@@ -828,9 +955,10 @@ def knockout_bracket():
     return render_template('knockout_bracket.html', bracket_data=bracket_data, flag_map=flag_map)
 
 @app.route('/rankings')
-def rankings():
-    group_rankings = get_group_rankings()
-    return render_template('rankings.html', group_rankings=group_rankings, flag_map=flag_map)
+@app.route('/rankings/<group>')
+def rankings(group=None):
+    group_rankings = get_group_rankings(group)
+    return render_template('rankings.html', group_rankings=group_rankings, flag_map=flag_map, current_group=group)
 
 @app.route('/update_result', methods=['POST'])
 def update_result():
@@ -838,7 +966,8 @@ def update_result():
     score1 = request.form['score1']
     score2 = request.form['score2']
     update_match_result(match_id, score1, score2)
-    return redirect(url_for('index'))
+    # 返回 JSON 响应而不是重定向
+    return {'status': 'success', 'message': '比赛结果已更新'}
 
 @app.route('/admin')
 def admin():
@@ -932,4 +1061,4 @@ if __name__ == '__main__':
     init_knockout_matchups()
     update_knockout_teams()
     crawler.update_odds()
-    app.run(debug=True, host='0.0.0.0', port=5001)
+    app.run(debug=True, host='0.0.0.0', port=5004)
