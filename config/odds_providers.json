@@ -1,0 +1,40 @@
+{
+  "_comment": "赔率数据源配置，支持多数据源优先级合并（priority 越小优先级越高）",
+  "providers": {
+    "sporttery": {
+      "enabled": true,
+      "class": "SportteryProvider",
+      "priority": 1,
+      "description": "中国体彩竞彩足球 (sporttery.cn 官方API)",
+      "config": {
+        "pool_code": "had,hhad",
+        "page_size": 100,
+        "page_delay": 1.0,
+        "timeout": 30
+      }
+    },
+    "api-football": {
+      "enabled": false,
+      "class": "ApiFootballProvider",
+      "priority": 2,
+      "description": "API-Football 官方API (需要API Key)",
+      "config": {
+        "api_key": "YOUR_API_KEY_HERE",
+        "league_id": "1",
+        "season": "2026"
+      }
+    },
+    "mock": {
+      "enabled": true,
+      "class": "MockOddsProvider",
+      "priority": 99,
+      "description": "模拟数据（用于测试，无真实数据时作为后备）",
+      "config": {}
+    }
+  },
+  "settings": {
+    "update_interval_minutes": 60,
+    "retry_times": 3,
+    "timeout_seconds": 30
+  }
+}

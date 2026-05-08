@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS odds (
     draw_odds REAL NOT NULL,  -- 平局赔率
     lose_odds REAL NOT NULL,  -- 客队胜赔率
     update_time TEXT NOT NULL,
+    source TEXT DEFAULT 'unknown',  -- 数据来源
     FOREIGN KEY (match_id) REFERENCES matches(id)
 );
 

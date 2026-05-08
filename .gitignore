@@ -34,3 +34,12 @@ Thumbs.db
 
 # Crawler data
 crawler/__pycache__/
+
+# Node.js / Frontend
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# Test files
+test_sporttery_*.py
+sporttery_data_sample.json
