@@ -28,7 +28,7 @@
 
     <!-- 水平导航菜单 -->
     <el-menu
-      :default-active="route.path"
+      :default-active="activeMenuIndex"
       mode="horizontal"
       class="app-menu"
       :ellipsis="false"
@@ -37,6 +37,10 @@
       <el-menu-item index="/">
         <el-icon><Soccer /></el-icon>
         <span>主页</span>
+      </el-menu-item>
+      <el-menu-item index="/betting">
+        <el-icon><Trophy /></el-icon>
+        <span>投注全景</span>
       </el-menu-item>
       <el-menu-item index="/live">
         <el-icon><Clock /></el-icon>
@@ -93,6 +97,21 @@ const selectedDate = ref('')
 const today = computed(() => {
   const now = new Date()
   return now.toISOString().split('T')[0]
+})
+
+// 计算当前活跃的菜单项
+const activeMenuIndex = computed(() => {
+  const adminSubMenus = [
+    '/admin/group_team_management',
+    '/admin/match_management',
+    '/admin/match_generation'
+  ]
+  for (const path of adminSubMenus) {
+    if (route.path.startsWith(path)) {
+      return path
+    }
+  }
+  return route.path
 })
 
 onMounted(() => {
