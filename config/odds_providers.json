@@ -7,7 +7,7 @@
       "priority": 1,
       "description": "中国体彩竞彩足球 (sporttery.cn 官方API)",
       "config": {
-        "pool_code": "had,hhad",
+        "pool_code": "had,hhad,crs,ttg,bqc",
         "page_size": 100,
         "page_delay": 1.0,
         "timeout": 30

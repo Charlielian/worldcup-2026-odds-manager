@@ -323,28 +323,16 @@
                     <span class="play-label">竞彩足球 半全场</span>
                     <span class="play-tip">半场结果 × 全场结果</span>
                   </div>
-                  <div class="bqc-matrix">
-                    <div class="bqc-header">
-                      <span></span>
-                      <span>{{ selectedMatch.home_team }} 赢</span>
-                      <span>平局</span>
-                      <span>{{ selectedMatch.away_team }} 赢</span>
-                    </div>
+                  <div class="bqc-grid">
                     <div
-                      v-for="half in ['win', 'draw', 'lose']"
-                      :key="half"
-                      class="bqc-row"
+                      v-for="item in getBqcOptions(selectedMatch.bqc)"
+                      :key="item.key"
+                      class="bqc-btn"
+                      :class="{ selected: selectedBet.playType === 'BQC' && selectedBet.option === item.key }"
+                      @click="pickBet('BQC', item.key, item.odds, item.label)"
                     >
-                      <span class="bqc-half-label">{{ getHalfLabel(half) }}</span>
-                      <div
-                        v-for="full in ['win', 'draw', 'lose']"
-                        :key="full"
-                        class="bqc-btn"
-                        :class="{ selected: selectedBet.playType === 'BQC' && selectedBet.option === `${half}_${full}` }"
-                        @click="pickBet('BQC', `${half}_${full}`, getBqcOdds(selectedMatch.bqc, half, full), getBqcLabel(half, full))"
-                      >
-                        <span class="bqc-odds">{{ getBqcOdds(selectedMatch.bqc, half, full) || '--' }}</span>
-                      </div>
+                      <span class="bqc-label">{{ item.label }}</span>
+                      <span class="bqc-odds">{{ item.odds || '--' }}</span>
                     </div>
                   </div>
                 </div>
@@ -610,21 +598,22 @@ const getTtgOptions = (ttgData) => {
   return items.filter(i => i.odds != null && i.odds !== 0)
 }
 
-// 半全场选项
-const HALF_LABELS = { win: '胜', draw: '平', lose: '负' }
-const getHalfLabel = (h) => HALF_LABELS[h] || h
-const getBqcLabel = (half, full) => `${HALF_LABELS[half]} / ${HALF_LABELS[full]}`
-const BQC_KEYS = {
-  win_win: 'win_win', win_draw: 'win_draw', win_lose: 'win_lose',
-  draw_win: 'draw_win', draw_draw: 'draw_draw', draw_lose: 'draw_lose',
-  lose_win: 'lose_win', lose_draw: 'lose_draw', lose_lose: 'lose_lose',
+// 半全场选项 - 简洁列表格式
+const getBqcOptions = (bqcData) => {
+  if (!bqcData) return []
+  const items = [
+    { key: 'win_win', label: '胜胜', odds: bqcData.win_win },
+    { key: 'win_draw', label: '胜平', odds: bqcData.win_draw },
+    { key: 'win_lose', label: '胜负', odds: bqcData.win_lose },
+    { key: 'draw_win', label: '平胜', odds: bqcData.draw_win },
+    { key: 'draw_draw', label: '平平', odds: bqcData.draw_draw },
+    { key: 'draw_lose', label: '平负', odds: bqcData.draw_lose },
+    { key: 'lose_win', label: '负胜', odds: bqcData.lose_win },
+    { key: 'lose_draw', label: '负平', odds: bqcData.lose_draw },
+    { key: 'lose_lose', label: '负负', odds: bqcData.lose_lose },
+  ]
+  return items.filter(i => i.odds != null && i.odds !== 0)
 }
-const getBqcOdds = (bqc, half, full) => {
-  if (!bqc) return null
-  const key = `${half}_${full}`
-  return bqc[BqcKey(key)] || null
-}
-const BqcKey = (k) => k  // 直接返回 key（已经在 BQC 数据中使用 _ 分隔）
 
 // 日期格式化
 const formatDateLabel = (dateStr) => {
@@ -836,19 +825,17 @@ onUnmounted(() => {
 .ttg-label { font-size: 13px; font-weight: 600; color: #303133; }
 .ttg-odds { font-size: 14px; font-weight: 700; color: #0047AB; }
 
-/* 半全场 */
-.bqc-matrix { display: flex; flex-direction: column; gap: 6px; }
-.bqc-header { display: grid; grid-template-columns: 60px repeat(3, 1fr); gap: 6px; margin-bottom: 4px; }
-.bqc-header span { font-size: 12px; font-weight: 600; color: #606266; text-align: center; }
-.bqc-row { display: grid; grid-template-columns: 60px repeat(3, 1fr); gap: 6px; align-items: center; }
-.bqc-half-label { font-size: 12px; color: #606266; font-weight: 600; text-align: center; }
+/* 半全场 - 简洁列表 */
+.bqc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 .bqc-btn {
-  border: 1px solid #e4e7ed; border-radius: 6px; padding: 8px 4px;
+  border: 1px solid #e4e7ed; border-radius: 6px; padding: 10px 8px;
   text-align: center; cursor: pointer; transition: all 0.15s; background: #fff;
+  display: flex; flex-direction: column; gap: 4px; align-items: center;
 }
 .bqc-btn:hover { border-color: #0047AB; }
 .bqc-btn.selected { border-color: #0047AB; background: #ecf5ff; }
-.bqc-odds { font-size: 13px; font-weight: 700; color: #0047AB; }
+.bqc-label { font-size: 13px; font-weight: 600; color: #303133; }
+.bqc-odds { font-size: 15px; font-weight: 700; color: #0047AB; }
 
 /* 投注确认卡 */
 .bet-confirm-card { margin-bottom: 12px; border-radius: 12px; background: linear-gradient(135deg, #f0f9ff, #e8f4fd); border: 1px solid #cce4f7; }
@@ -910,7 +897,7 @@ onUnmounted(() => {
 }
 @media (max-width: 768px) {
   .ttg-grid { grid-template-columns: repeat(4, 1fr); }
-  .bqc-header, .bqc-row { grid-template-columns: 50px repeat(3, 1fr); }
+  .bqc-grid { grid-template-columns: repeat(3, 1fr); }
   .bet-calc { flex-direction: column; align-items: stretch; }
   .bet-actions { flex-direction: column; }
   .confirm-btn { width: 100%; }

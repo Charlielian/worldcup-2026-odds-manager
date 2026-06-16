@@ -1,7 +1,7 @@
 import logging
 from sqlite3 import Error
 
-from backend.db import db_pool
+import backend.db
 from backend.utils.normalize import normalize_team_name
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 def get_group_rankings(group=None):
     """获取小组排名。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
 
@@ -158,7 +158,7 @@ def get_group_rankings(group=None):
         logger.error("get_group_rankings 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_best_third_place_teams():
@@ -246,7 +246,7 @@ def get_group_team_mapping():
 
 def is_group_stage_completed():
     """检查小组赛是否全部完成。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT COUNT(*) FROM matches WHERE stage = '小组赛' AND status != 'finished'")
@@ -256,4 +256,4 @@ def is_group_stage_completed():
         logger.error("is_group_stage_completed 错误: %s", e)
         return False
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)

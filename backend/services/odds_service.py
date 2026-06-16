@@ -9,7 +9,7 @@ import random
 from abc import abstractmethod
 from datetime import datetime
 from typing import List, Dict, Optional, Tuple
-from backend.db import db_pool
+import backend.db
 from backend.services.odds_base import OddsData, OddsProvider
 
 logger = logging.getLogger(__name__)
@@ -258,7 +258,7 @@ class OddsCrawlerManager:
             logger.warning("没有获取到任何赔率数据")
             return 0, 0
         
-        conn = db_pool.get_connection()
+        conn = backend.db.db_pool.get_connection()
         try:
             cursor = conn.cursor()
             
@@ -281,7 +281,26 @@ class OddsCrawlerManager:
                         break
                 
                 if matching_odds:
-                    # 插入新的赔率记录
+                    # 先检查是否已有相同赔率记录（避免重复插入）
+                    cursor.execute(
+                        """SELECT COUNT(*) FROM odds 
+                           WHERE match_id = ? 
+                           AND win_odds = ? 
+                           AND draw_odds = ? 
+                           AND lose_odds = ?""",
+                        (match_id, 
+                         matching_odds.win_odds, 
+                         matching_odds.draw_odds, 
+                         matching_odds.lose_odds)
+                    )
+                    existing_count = cursor.fetchone()[0]
+                    
+                    if existing_count > 0:
+                        # 已有相同赔率记录，跳过
+                        skipped += 1
+                        continue
+                    
+                    # 没有相同赔率记录，插入新记录
                     cursor.execute(
                         """INSERT INTO odds 
                            (match_id, win_odds, draw_odds, lose_odds, update_time, source) 
@@ -307,7 +326,7 @@ class OddsCrawlerManager:
             conn.rollback()
             return 0, 0
         finally:
-            db_pool.return_connection(conn)
+            backend.db.db_pool.return_connection(conn)
     
     def _match_teams(self, db_team1: str, db_team2: str, 
                      odds_team1: str, odds_team2: str) -> bool:

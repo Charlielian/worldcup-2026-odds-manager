@@ -141,7 +141,7 @@ onMounted(() => {
 
 <style scoped>
 .group-team-management {
-  padding: 0;
+  padding: 0 8px;
 }
 
 .page-header {

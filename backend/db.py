@@ -80,10 +80,18 @@ def init_db_pool(db_path):
     logger.info("数据库连接池初始化完成: %s", db_path)
 
 
+def get_connection():
+    """从全局连接池获取连接（供其他模块使用）。"""
+    global db_pool
+    if db_pool is None:
+        raise RuntimeError("数据库连接池未初始化，请先调用 init_db_pool()")
+    return db_pool.get_connection()
+
+
 @contextmanager
 def get_db():
     """上下文管理器：从连接池获取连接，使用完毕后自动归还。"""
-    conn = db_pool.get_connection()
+    conn = get_connection()
     try:
         yield conn
     finally:
@@ -143,6 +151,9 @@ def serialize_match(match_tuple, odds_tuple=None):
 def get_matches_with_odds_joined(cursor, where_clause, params=()):
     """使用单个 JOIN 查询获取比赛及其最新赔率，避免 N+1 查询。
 
+    关键点：使用 GROUP BY match_id + MAX(ROWID) 确保每个 match_id 只返回一行赔率，
+    避免因 update_time 重复导致的比赛行重复问题。
+
     Args:
         cursor: 数据库游标
         where_clause: WHERE 子句（不含 WHERE 关键字）
@@ -158,7 +169,12 @@ def get_matches_with_odds_joined(cursor, where_clause, params=()):
         LEFT JOIN (
             SELECT match_id, win_odds, draw_odds, lose_odds, update_time, source
             FROM odds o1
-            WHERE update_time = (SELECT MAX(update_time) FROM odds o2 WHERE o2.match_id = o1.match_id)
+            WHERE o1.ROWID = (
+                SELECT o2.ROWID FROM odds o2
+                WHERE o2.match_id = o1.match_id
+                ORDER BY o2.update_time DESC, o2.ROWID DESC
+                LIMIT 1
+            )
         ) o ON m.id = o.match_id
         WHERE {where_clause}
         ORDER BY m.match_time
@@ -166,7 +182,12 @@ def get_matches_with_odds_joined(cursor, where_clause, params=()):
     cursor.execute(query, params)
     rows = cursor.fetchall()
     result = []
+    seen_ids = set()
     for row in rows:
+        # 双重保险：如果仍然有重复的 match_id，只保留第一条
+        if row[0] in seen_ids:
+            continue
+        seen_ids.add(row[0])
         match_tuple = (row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7], row[8])
         odds_tuple = (row[9], row[10], row[11], row[12], row[13]) if row[9] is not None else None
         result.append((match_tuple, odds_tuple))

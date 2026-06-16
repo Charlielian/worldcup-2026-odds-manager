@@ -18,6 +18,7 @@
           style="width: 100%"
           row-key="id"
           :default-sort="{ prop: 'match_time', order: 'ascending' }"
+          height="calc(100vh - 240px)"
         >
           <el-table-column label="比赛时间" prop="match_time" width="180" sortable>
             <template #default="{ row }">
@@ -150,7 +151,11 @@ const filteredMatches = computed(() => {
   if (activeTab.value === 'all') {
     return matches.value
   }
-  return matches.value.filter(m => m.group_name === activeTab.value)
+  // 兼容 "A" 和 "A组" 两种格式
+  return matches.value.filter(m => 
+    m.group_name === activeTab.value || 
+    m.group_name === `${activeTab.value}组`
+  )
 })
 
 // 格式化时间显示

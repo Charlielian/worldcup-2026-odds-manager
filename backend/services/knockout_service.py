@@ -1,7 +1,7 @@
 import logging
 from sqlite3 import Error
 
-from backend.db import db_pool
+import backend.db
 from backend.utils.flags import get_flag
 from backend.services.ranking_service import (
     get_group_team_mapping,
@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def init_knockout_matchups():
     """初始化淘汰赛对阵表（32强）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
 
@@ -75,7 +75,7 @@ def init_knockout_matchups():
         logger.error("init_knockout_matchups 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def update_knockout_teams():
@@ -83,7 +83,7 @@ def update_knockout_teams():
     if not is_group_stage_completed():
         return
 
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
 
@@ -125,12 +125,12 @@ def update_knockout_teams():
         logger.error("update_knockout_teams 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_knockout_bracket_data():
     """获取淘汰赛对阵数据（用于赛程图）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
 
@@ -184,4 +184,4 @@ def get_knockout_bracket_data():
         logger.error("get_knockout_bracket_data 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)

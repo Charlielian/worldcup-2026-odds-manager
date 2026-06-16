@@ -1,83 +1,64 @@
 <template>
   <div class="knockout-page" v-loading="loading">
-    <div v-if="!loading && matches.length === 0" class="empty-state">
+    <div v-if="!loading && allRounds.length === 0" class="empty-state">
       <el-empty description="小组赛尚未结束，淘汰赛对阵待定" />
     </div>
-    <div v-else-if="!loading">
-      <el-collapse v-model="activeRounds">
+
+    <div v-else-if="!loading" class="knockout-list">
+      <el-collapse v-model="activeRound" accordion>
         <el-collapse-item
-          v-for="round in roundOrder"
+          v-for="round in allRounds"
           :key="round.key"
           :name="round.key"
         >
           <template #title>
             <div class="round-header">
-              <span class="round-title">{{ round.label }}</span>
-              <el-tag size="small" type="info">{{ getRoundMatches(round.key).length }} 场比赛</el-tag>
+              <span class="round-icon">🏆</span>
+              <span class="round-name">{{ round.label }}</span>
+              <el-tag size="small" type="info" style="margin-left: 12px;">
+                {{ round.matches.length }} 场
+              </el-tag>
             </div>
           </template>
-          <div class="round-matches">
-            <el-card
-              v-for="match in getRoundMatches(round.key)"
+
+          <el-row :gutter="16">
+            <el-col
+              :xs="24" :sm="12" :md="8" :lg="6"
+              v-for="match in round.matches"
               :key="match.id"
-              class="match-card"
-              shadow="hover"
+              style="margin-bottom: 16px;"
             >
-              <div class="match-info">
-                <div class="match-time-venue">
+              <el-card
+                shadow="hover"
+                class="match-card"
+                :class="{
+                  'is-finished': match.status === 'finished',
+                  'is-upcoming': match.status === 'upcoming'
+                }"
+              >
+                <!-- 队伍信息 -->
+                <div class="match-teams">
+                  <div class="team-row" :class="{ 'is-winner': match.status === 'finished' && match.score1 > match.score2 }">
+                    <span class="team-flag">{{ match.flag1 || '' }}</span>
+                    <span class="team-name">{{ match.team1 }}</span>
+                    <span v-if="match.status === 'finished'" class="team-score">{{ match.score1 }}</span>
+                  </div>
+                  <div class="vs-row">VS</div>
+                  <div class="team-row" :class="{ 'is-winner': match.status === 'finished' && match.score2 > match.score1 }">
+                    <span class="team-flag">{{ match.flag2 || '' }}</span>
+                    <span class="team-name">{{ match.team2 }}</span>
+                    <span v-if="match.status === 'finished'" class="team-score">{{ match.score2 }}</span>
+                  </div>
+                </div>
+
+                <!-- 比赛时间 -->
+                <div class="match-footer">
                   <el-icon><Clock /></el-icon>
-                  <span>{{ match.match_time }}</span>
-                  <span class="venue">{{ match.venue }}</span>
+                  <span>{{ formatTime(match.match_time) }}</span>
                 </div>
-                <el-tag
-                  :type="getStatusType(match.status)"
-                  size="small"
-                  effect="dark"
-                >
-                  {{ getStatusLabel(match.status) }}
-                </el-tag>
-              </div>
-
-              <div class="match-teams">
-                <div class="team">
-                  <span v-if="match.flag1" class="flag">{{ match.flag1 }}</span>
-                  <span class="team-name">{{ match.team1 }}</span>
-                </div>
-                <div class="score-section">
-                  <template v-if="match.status === 'finished'">
-                    <span class="score">{{ match.score1 }}</span>
-                    <span class="score-divider">:</span>
-                    <span class="score">{{ match.score2 }}</span>
-                  </template>
-                  <template v-else>
-                    <el-tag type="info" effect="plain" round>VS</el-tag>
-                  </template>
-                </div>
-                <div class="team">
-                  <span v-if="match.flag2" class="flag">{{ match.flag2 }}</span>
-                  <span class="team-name">{{ match.team2 }}</span>
-                </div>
-              </div>
-
-              <div v-if="match.odds && match.odds.win" class="match-odds">
-                <div class="odds-label">赔率</div>
-                <div class="odds-items">
-                  <div class="odds-item">
-                    <span class="odds-label-text">{{ match.team1 }} 胜</span>
-                    <span class="odds-value">{{ match.odds.win }}</span>
-                  </div>
-                  <div class="odds-item">
-                    <span class="odds-label-text">平</span>
-                    <span class="odds-value">{{ match.odds.draw }}</span>
-                  </div>
-                  <div class="odds-item">
-                    <span class="odds-label-text">{{ match.team2 }} 胜</span>
-                    <span class="odds-value">{{ match.odds.lose }}</span>
-                  </div>
-                </div>
-              </div>
-            </el-card>
-          </div>
+              </el-card>
+            </el-col>
+          </el-row>
         </el-collapse-item>
       </el-collapse>
     </div>
@@ -86,46 +67,51 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { matchAPI } from '../api'
 import { Clock } from '@element-plus/icons-vue'
+import { matchAPI } from '../api'
 
 const loading = ref(true)
 const matches = ref([])
-const activeRounds = ref([])
+const activeRound = ref('')
 
-const roundOrder = [
-  { key: '1/16决赛', label: '1/16决赛 (三十二强)' },
-  { key: '1/8决赛', label: '1/8决赛 (十六强)' },
-  { key: '1/4决赛', label: '1/4决赛 (八强)' },
+const roundConfig = [
+  { key: '1/16决赛', label: '1/16决赛' },
+  { key: '1/8决赛', label: '1/8决赛' },
+  { key: '1/4决赛', label: '1/4决赛' },
   { key: '半决赛', label: '半决赛' },
   { key: '三四名决赛', label: '三四名决赛' },
-  { key: '决赛', label: '决赛' }
+  { key: '决赛', label: '决赛' },
 ]
 
-const getRoundMatches = (roundKey) => {
-  return matches.value.filter(m => m.stage === roundKey)
+const allRounds = computed(() => {
+  return roundConfig
+    .map(r => ({
+      ...r,
+      matches: matches.value.filter(m => m.stage === r.key)
+    }))
+    .filter(r => r.matches.length > 0)
+})
+
+const formatTime = (matchTime) => {
+  if (!matchTime) return ''
+  const parts = matchTime.split(' ')
+  if (parts.length >= 2) {
+    const dateParts = parts[0].split('-')
+    if (dateParts.length >= 3) {
+      return `${dateParts[1]}-${dateParts[2]} ${parts[1].substring(0, 5)}`
+    }
+  }
+  return matchTime
 }
 
-const getStatusType = (status) => {
-  const map = { finished: 'success', upcoming: 'warning', live: 'danger' }
-  return map[status] || 'info'
-}
-
-const getStatusLabel = (status) => {
-  const map = { finished: '已结束', upcoming: '未开始', live: '进行中' }
-  return map[status] || status
-}
-
-const fetchMatches = async () => {
+const fetchData = async () => {
   try {
     loading.value = true
     const res = await matchAPI.getKnockoutMatches()
     matches.value = res.matches || []
-    // 默认展开有比赛的轮次
-    const roundsWithMatches = roundOrder
-      .filter(r => getRoundMatches(r.key).length > 0)
-      .map(r => r.key)
-    activeRounds.value = roundsWithMatches.length > 0 ? [roundsWithMatches[0]] : []
+    if (allRounds.value.length > 0) {
+      activeRound.value = allRounds.value[0].key
+    }
   } catch (error) {
     console.error('获取淘汰赛数据失败:', error)
   } finally {
@@ -134,15 +120,14 @@ const fetchMatches = async () => {
 }
 
 onMounted(() => {
-  fetchMatches()
+  fetchData()
 })
 </script>
 
 <style scoped>
 .knockout-page {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  min-height: 100%;
 }
 
 .empty-state {
@@ -153,152 +138,93 @@ onMounted(() => {
 .round-header {
   display: flex;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-}
-
-.round-title {
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  color: #303133;
 }
 
-.round-matches {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 16px;
-  padding: 8px 0;
+.round-icon {
+  margin-right: 8px;
 }
 
+.round-name {
+  color: var(--el-text-color-primary);
+}
+
+/* 比赛卡片 */
 .match-card {
-  border-radius: 12px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 
 .match-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
-.match-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #ebeef5;
+.match-card.is-finished {
+  border-color: #67c23a;
 }
 
-.match-time-venue {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #909399;
-  font-size: 14px;
-}
-
-.venue {
-  margin-left: 8px;
-  color: #b0b5bd;
+.match-card.is-upcoming {
+  border-style: dashed;
 }
 
 .match-teams {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
   padding: 8px 0;
 }
 
-.team {
+.team-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex: 1;
+  padding: 6px 0;
 }
 
-.team:last-child {
-  justify-content: flex-end;
+.team-row.is-winner {
+  background: #f0f9eb;
+  border-radius: 4px;
+  padding: 6px 8px;
+  margin: 0 -8px;
 }
 
-.flag {
-  font-size: 28px;
+.team-flag {
+  font-size: 20px;
+  min-width: 28px;
 }
 
 .team-name {
-  font-size: 16px;
-  font-weight: 600;
-  color: #303133;
-}
-
-.score-section {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 0 16px;
-  min-width: 80px;
-  justify-content: center;
-}
-
-.score {
-  font-size: 24px;
-  font-weight: 700;
-  color: #303133;
-}
-
-.score-divider {
-  font-size: 20px;
-  color: #909399;
-}
-
-.match-odds {
-  margin-top: 12px;
-  padding-top: 12px;
-  border-top: 1px dashed #ebeef5;
-  background: #f8f9fa;
-  border-radius: 8px;
-  padding: 12px;
-}
-
-.odds-label {
-  font-size: 12px;
-  color: #909399;
-  margin-bottom: 8px;
+  flex: 1;
+  font-size: 14px;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.odds-items {
-  display: flex;
-  justify-content: space-around;
-}
-
-.odds-item {
+.team-score {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0047AB;
+  min-width: 24px;
   text-align: center;
 }
 
-.odds-label-text {
-  display: block;
+.vs-row {
+  text-align: center;
   font-size: 12px;
   color: #909399;
-  margin-bottom: 4px;
+  padding: 2px 0;
 }
 
-.odds-value {
-  display: block;
-  font-size: 16px;
-  font-weight: 700;
-  color: #e6a23c;
-}
-
-@media (max-width: 768px) {
-  .round-matches {
-    grid-template-columns: 1fr;
-  }
-
-  .team-name {
-    font-size: 14px;
-  }
-
-  .flag {
-    font-size: 22px;
-  }
+.match-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed #ebeef5;
+  font-size: 12px;
+  color: #909399;
 }
 </style>

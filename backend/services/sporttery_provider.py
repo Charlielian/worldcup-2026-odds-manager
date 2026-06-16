@@ -66,7 +66,8 @@ class SportteryProvider(OddsProvider):
         all_matches = []
         page = 1
         page_size = self.config.get('page_size', 100)
-        pool_code = self.config.get('pool_code', 'had,hhad,crs,ttg,bqc')
+        # 注意：半全场使用hafu作为poolCode，不是bqc
+        pool_code = self.config.get('pool_code', 'had,hhad,crs,ttg,hafu')
 
         while True:
             url = (
@@ -206,7 +207,7 @@ class SportteryProvider(OddsProvider):
         result = {
             'match_num': match.get('matchNumStr', ''),
             'match_date': match.get('matchDate', ''),
-            'match_time': match.get('matchTime', ''),
+            'match_time': match.get('matchTime', '')[:5],  # '06:00:00' -> '06:00'
             'home_team': home_team,
             'away_team': away_team,
             'league': match.get('leagueAbbName', ''),
@@ -249,9 +250,9 @@ class SportteryProvider(OddsProvider):
                 'update_time': update_dt,
             }
 
-        # 比分 CRS
+        # 比分 CRS - API返回格式: s{homescore}s{awayscore} 如 s00s00=0:0, s01s00=1:0
         crs = match.get('crs', {})
-        if crs and crs.get('h'):
+        if crs and crs.get('s00s00'):
             update_dt = ''
             ud = crs.get('updateDate', '')
             ut = crs.get('updateTime', '')
@@ -259,42 +260,45 @@ class SportteryProvider(OddsProvider):
                 update_dt = f"{ud} {ut}" if ut else ud
             result['crs'] = {
                 'scores': {
-                    '0:0': float(crs.get('h0h0', 0)) or None,
-                    '0:1': float(crs.get('h0a1', 0)) or None,
-                    '0:2': float(crs.get('h0a2', 0)) or None,
-                    '0:3': float(crs.get('h0a3', 0)) or None,
-                    '0:4': float(crs.get('h0a4', 0)) or None,
-                    '1:0': float(crs.get('h1h0', 0)) or None,
-                    '1:1': float(crs.get('h1h1', 0)) or None,
-                    '1:2': float(crs.get('h1a1', 0)) or None,
-                    '1:3': float(crs.get('h1a2', 0)) or None,
-                    '1:4': float(crs.get('h1a3', 0)) or None,
-                    '2:0': float(crs.get('h2h0', 0)) or None,
-                    '2:1': float(crs.get('h2h1', 0)) or None,
-                    '2:2': float(crs.get('h2h2', 0)) or None,
-                    '2:3': float(crs.get('h2a1', 0)) or None,
-                    '2:4': float(crs.get('h2a2', 0)) or None,
-                    '3:0': float(crs.get('h3h0', 0)) or None,
-                    '3:1': float(crs.get('h3h1', 0)) or None,
-                    '3:2': float(crs.get('h3h2', 0)) or None,
-                    '3:3': float(crs.get('h3h3', 0)) or None,
-                    '3:4': float(crs.get('h3a1', 0)) or None,
-                    '4:0': float(crs.get('h4h0', 0)) or None,
-                    '4:1': float(crs.get('h4h1', 0)) or None,
-                    '4:2': float(crs.get('h4h2', 0)) or None,
-                    '4:3': float(crs.get('h4h3', 0)) or None,
-                    '4:4': float(crs.get('h4h4', 0)) or None,
-                    '胜其他': float(crs.get('h999', 0)) or None,
-                    '0:5': float(crs.get('h0a5', 0)) or None,
-                    '5:0': float(crs.get('h5h0', 0)) or None,
-                    '负其他': float(crs.get('a999', 0)) or None,
+                    '0:0': float(crs.get('s00s00', 0)) or None,
+                    '0:1': float(crs.get('s00s01', 0)) or None,
+                    '0:2': float(crs.get('s00s02', 0)) or None,
+                    '0:3': float(crs.get('s00s03', 0)) or None,
+                    '0:4': float(crs.get('s00s04', 0)) or None,
+                    '0:5': float(crs.get('s00s05', 0)) or None,
+                    '1:0': float(crs.get('s01s00', 0)) or None,
+                    '1:1': float(crs.get('s01s01', 0)) or None,
+                    '1:2': float(crs.get('s01s02', 0)) or None,
+                    '1:3': float(crs.get('s01s03', 0)) or None,
+                    '1:4': float(crs.get('s01s04', 0)) or None,
+                    '2:0': float(crs.get('s02s00', 0)) or None,
+                    '2:1': float(crs.get('s02s01', 0)) or None,
+                    '2:2': float(crs.get('s02s02', 0)) or None,
+                    '2:3': float(crs.get('s02s03', 0)) or None,
+                    '2:4': float(crs.get('s02s04', 0)) or None,
+                    '3:0': float(crs.get('s03s00', 0)) or None,
+                    '3:1': float(crs.get('s03s01', 0)) or None,
+                    '3:2': float(crs.get('s03s02', 0)) or None,
+                    '3:3': float(crs.get('s03s03', 0)) or None,
+                    '3:4': float(crs.get('s03s04', 0)) or None,
+                    '4:0': float(crs.get('s04s00', 0)) or None,
+                    '4:1': float(crs.get('s04s01', 0)) or None,
+                    '4:2': float(crs.get('s04s02', 0)) or None,
+                    '4:3': float(crs.get('s04s03', 0)) or None,
+                    '4:4': float(crs.get('s04s04', 0)) or None,
+                    '5:0': float(crs.get('s05s00', 0)) or None,
+                    '5:1': float(crs.get('s05s01', 0)) or None,
+                    '5:2': float(crs.get('s05s02', 0)) or None,
+                    '胜其他': float(crs.get('s1sh', 0)) or None,
+                    '平其他': float(crs.get('s1sd', 0)) or None,
+                    '负其他': float(crs.get('s1sa', 0)) or None,
                 },
                 'update_time': update_dt,
             }
 
-        # 总进球 TTG
-        ttg = match.get('TTG', {})
-        if ttg:
+        # 总进球 TTG (API返回key是小写ttg)
+        ttg = match.get('ttg', {})
+        if ttg and ttg.get('s0'):
             update_dt = ''
             ud = ttg.get('updateDate', '')
             ut = ttg.get('updateTime', '')
@@ -312,29 +316,35 @@ class SportteryProvider(OddsProvider):
                 'update_time': update_dt,
             }
 
-        # 半全场 BQC
-        bqc = match.get('bqc', {})
-        if bqc and bqc.get('hh'):
+        # 半全场 BQC/HAFU (API返回key是hafu，不是bqc)
+        # hh=胜胜, hd=胜平, ha=胜负, dh=平胜, dd=平平, da=平负, ah=负胜, ad=负平, aa=负负
+        hafu = match.get('hafu', {})
+        if hafu and hafu.get('hh'):
             update_dt = ''
-            ud = bqc.get('updateDate', '')
-            ut = bqc.get('updateTime', '')
+            ud = hafu.get('updateDate', '')
+            ut = hafu.get('updateTime', '')
             if ud:
                 update_dt = f"{ud} {ut}" if ut else ud
             result['bqc'] = {
-                'win_win': float(bqc['hh']) or None,
-                'win_draw': float(bqc['hd']) or None,
-                'win_lose': float(bqc['ha']) or None,
-                'draw_win': float(bqc['dh']) or None,
-                'draw_draw': float(bqc['dd']) or None,
-                'draw_lose': float(bqc['da']) or None,
-                'lose_win': float(bqc['ah']) or None,
-                'lose_draw': float(bqc['ad']) or None,
-                'lose_lose': float(bqc['aa']) or None,
+                'win_win': float(hafu['hh']) or None,
+                'win_draw': float(hafu['hd']) or None,
+                'win_lose': float(hafu['ha']) or None,
+                'draw_win': float(hafu['dh']) or None,
+                'draw_draw': float(hafu['dd']) or None,
+                'draw_lose': float(hafu['da']) or None,
+                'lose_win': float(hafu['ah']) or None,
+                'lose_draw': float(hafu['ad']) or None,
+                'lose_lose': float(hafu['aa']) or None,
                 'update_time': update_dt,
             }
 
-        # 至少需要有胜平负数据
-        if not result['had']:
+        # 至少需要有任一玩法的赔率数据（胜平负/让球/比分/总进球/半全场）
+        has_any_odds = (
+            result['had'] is not None or result['hhad'] is not None or
+            result['crs'] is not None or result['ttg'] is not None or
+            result['bqc'] is not None
+        )
+        if not has_any_odds:
             return None
 
         return result

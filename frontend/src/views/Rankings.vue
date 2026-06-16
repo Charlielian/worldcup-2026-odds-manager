@@ -54,7 +54,7 @@
             <el-table-column label="队伍" min-width="160">
               <template #default="{ row }">
                 <span class="team-cell">
-                  <span class="flag-emoji">{{ getTeamFlag(row.team_name) }}</span>
+                  <span class="flag-emoji">{{ row.flag || getTeamFlag(row.team_name) }}</span>
                   <span class="team-name-text">{{ row.team_name }}</span>
                 </span>
               </template>
@@ -130,7 +130,11 @@ const displayGroups = computed(() => {
   if (activeTab.value === 'all') {
     return rankings.value
   }
-  return rankings.value.filter(g => g.group_name === activeTab.value)
+  // 兼容 "A" 和 "A组" 两种格式
+  return rankings.value.filter(g => 
+    g.group_name === activeTab.value || 
+    g.group_name === `${activeTab.value}组`
+  )
 })
 
 // 行样式：前2名绿色背景（出线），第3名黄橙色背景（最佳第三）

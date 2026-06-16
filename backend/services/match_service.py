@@ -3,14 +3,15 @@ import itertools
 from datetime import datetime, timedelta
 from sqlite3 import Error
 
-from backend.db import db_pool, get_matches_with_odds_joined
+import backend.db
+from backend.db import get_matches_with_odds_joined
 
 logger = logging.getLogger(__name__)
 
 
 def init_db():
     """初始化数据库表结构和示例数据。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.get_connection()
     try:
         cursor = conn.cursor()
 
@@ -93,12 +94,12 @@ def init_db():
         logger.error("init_db 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_matches_by_date(date):
     """获取指定日期的比赛（使用 JOIN 优化，避免 N+1 查询）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         return get_matches_with_odds_joined(
@@ -110,12 +111,12 @@ def get_matches_by_date(date):
         logger.error("get_matches_by_date 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_upcoming_matches(start_date, days=7):
     """获取从指定日期开始的未来比赛（使用 JOIN 优化）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         end_date = (datetime.strptime(start_date, "%Y-%m-%d") + timedelta(days=days)).strftime("%Y-%m-%d")
@@ -128,7 +129,7 @@ def get_upcoming_matches(start_date, days=7):
         logger.error("get_upcoming_matches 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def group_matches_by_date(matches):
@@ -144,7 +145,7 @@ def group_matches_by_date(matches):
 
 def get_next_match_date():
     """获取最近有比赛的日期。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         today = datetime.now().strftime("%Y-%m-%d")
@@ -161,12 +162,12 @@ def get_next_match_date():
         logger.error("get_next_match_date 错误: %s", e)
         return datetime.now().strftime("%Y-%m-%d")
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_group_matches(group=None):
     """获取小组赛比赛（使用 JOIN 优化）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         if group:
@@ -184,7 +185,7 @@ def get_group_matches(group=None):
         logger.error("get_group_matches 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_knockout_matches():
@@ -198,7 +199,7 @@ def get_knockout_matches():
     if not is_group_stage_completed():
         return []
 
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
 
@@ -238,12 +239,12 @@ def get_knockout_matches():
         logger.error("get_knockout_matches 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_all_group_matches():
     """获取所有小组赛信息（用于管理页面）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -255,12 +256,12 @@ def get_all_group_matches():
         logger.error("get_all_group_matches 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def add_group_match(team1, team2, match_time, group_name):
     """添加小组赛信息。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -272,12 +273,12 @@ def add_group_match(team1, team2, match_time, group_name):
         logger.error("add_group_match 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_all_groups():
     """获取所有小组。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id, group_name FROM groups ORDER BY id")
@@ -287,12 +288,12 @@ def get_all_groups():
         logger.error("get_all_groups 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_teams_by_group(group_id):
     """获取小组的所有队伍。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT id, team_name FROM teams WHERE group_id = ? ORDER BY id", (group_id,))
@@ -302,12 +303,12 @@ def get_teams_by_group(group_id):
         logger.error("get_teams_by_group 错误: %s", e)
         return []
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def add_team_to_group(team_name, group_id):
     """添加队伍到小组。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         # 检查小组是否已经有4支队
@@ -327,12 +328,12 @@ def add_team_to_group(team_name, group_id):
         conn.rollback()
         return False
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def delete_team(team_id):
     """删除队伍。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("DELETE FROM teams WHERE id = ?", (team_id,))
@@ -341,12 +342,12 @@ def delete_team(team_id):
         logger.error("delete_team 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def generate_group_matches(group_id, group_name):
     """为小组生成比赛。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         # 获取小组的所有队伍
@@ -369,12 +370,12 @@ def generate_group_matches(group_id, group_name):
         logger.error("generate_group_matches 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_match_by_id(match_id):
     """获取单个比赛信息。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -387,12 +388,12 @@ def get_match_by_id(match_id):
         logger.error("get_match_by_id 错误: %s", e)
         return None
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def update_match_info(match_id, team1, team2, match_time, group_name, status, score1, score2):
     """更新比赛信息。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -404,12 +405,12 @@ def update_match_info(match_id, team1, team2, match_time, group_name, status, sc
         logger.error("update_match_info 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def update_match_result(match_id, score1, score2):
     """更新比赛结果。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute(
@@ -421,12 +422,12 @@ def update_match_result(match_id, score1, score2):
         logger.error("update_match_result 错误: %s", e)
         conn.rollback()
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
 
 
 def get_group_name_by_id(group_id):
     """根据小组ID获取小组名称（使用连接池）。"""
-    conn = db_pool.get_connection()
+    conn = backend.db.db_pool.get_connection()
     try:
         cursor = conn.cursor()
         cursor.execute("SELECT group_name FROM groups WHERE id = ?", (group_id,))
@@ -436,4 +437,4 @@ def get_group_name_by_id(group_id):
         logger.error("get_group_name_by_id 错误: %s", e)
         return None
     finally:
-        db_pool.return_connection(conn)
+        backend.db.db_pool.return_connection(conn)
