@@ -182,52 +182,31 @@ def api_odds_update():
 
 @api_bp.route('/api/v1/live/matches')
 def api_live_matches():
-    """获取体彩当前在售比赛及赔率（实时数据）。"""
+    """获取体彩当前在售比赛及全部玩法赔率（胜平负/让球/比分/总进球/半全场）。"""
     from backend.services.sporttery_provider import SportteryProvider
-    
+
     try:
         provider = SportteryProvider('sporttery', {
-            'pool_code': 'had,hhad',
+            'pool_code': 'had,hhad,crs,TTG,bqc',
             'page_size': 100,
             'page_delay': 0.5,
             'timeout': 30
         })
-        
-        odds_list = provider.fetch_odds()
-        
+
+        all_matches = provider.fetch_all_play_types()
+
         # 按日期分组
         matches_by_date = {}
-        for odds in odds_list:
-            # 从 updated_at 提取日期
-            date_str = odds.updated_at.split(' ')[0] if odds.updated_at else '未知日期'
+        for m in all_matches:
+            date_str = m.get('match_date', '未知日期')
             if date_str not in matches_by_date:
                 matches_by_date[date_str] = []
-            
-            matches_by_date[date_str].append({
-                'team1': odds.team1,
-                'team2': odds.team2,
-                'win_odds': odds.win_odds,
-                'draw_odds': odds.draw_odds,
-                'lose_odds': odds.lose_odds,
-                'source': odds.source,
-                'updated_at': odds.updated_at
-            })
-        
+            matches_by_date[date_str].append(m)
+
         return jsonify({
-            'total': len(odds_list),
+            'total': len(all_matches),
             'matches_by_date': matches_by_date,
-            'all_matches': [
-                {
-                    'team1': o.team1,
-                    'team2': o.team2,
-                    'win_odds': o.win_odds,
-                    'draw_odds': o.draw_odds,
-                    'lose_odds': o.lose_odds,
-                    'source': o.source,
-                    'updated_at': o.updated_at
-                }
-                for o in odds_list
-            ]
+            'all_matches': all_matches
         })
     except Exception as e:
         logger.error(f"获取体彩实时数据失败: {e}")

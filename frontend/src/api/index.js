@@ -1,6 +1,9 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
+// 管理员令牌（与后端 ADMIN_TOKEN 一致）
+const ADMIN_TOKEN = 'wc2026-admin-token'
+
 const api = axios.create({
   baseURL: '/api/v1',
   timeout: 15000,
@@ -11,7 +14,17 @@ const api = axios.create({
 
 // Request interceptor
 api.interceptors.request.use(
-  config => config,
+  config => {
+    // 为管理 API 自动添加 Bearer token（FastAPI 鉴权使用 Authorization 头）
+    const url = config.url || ''
+    if (
+      url.startsWith('/admin/') ||
+      url === '/odds/update'
+    ) {
+      config.headers.Authorization = `Bearer ${ADMIN_TOKEN}`
+    }
+    return config
+  },
   error => Promise.reject(error)
 )
 
@@ -19,7 +32,9 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   response => response.data,
   error => {
-    const message = error.response?.data?.message || '请求失败，请稍后重试'
+    // FastAPI 返回 {detail: '...'}；旧 Flask 业务接口可能返回 {message: '...'}
+    const payload = error.response?.data
+    const message = payload?.detail || payload?.message || '请求失败，请稍后重试'
     ElMessage.error(message)
     return Promise.reject(error)
   }
@@ -33,6 +48,7 @@ export const matchAPI = {
   getKnockoutBracket: () => api.get('/knockout/bracket'),
   getRankings: (group) => api.get('/rankings', { params: group ? { group } : {} }),
   getFlags: () => api.get('/flags'),
+  getLiveMatches: () => api.get('/live/matches'),
 }
 
 export const oddsAPI = {
